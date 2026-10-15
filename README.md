@@ -75,38 +75,45 @@ Unlike cloud-based memory services like [Mem0](https://github.com/mem0ai/mem0) o
 
 ## Installation
 
-### macOS (Homebrew)
+### Homebrew (macOS / Linux)
 
 ```sh
-brew tap memvault-org/tap
-brew install memvault
+brew install liyown/tap/memvault
 ```
 
-### Linux / macOS (Manual)
-
-Download from [Releases](https://github.com/memvault-org/memvault/releases):
+### Shell installer (macOS / Linux / Git Bash on Windows)
 
 ```sh
-# macOS ARM64
-curl -LO https://github.com/memvault-org/memvault/releases/latest/download/memvault_VERSION_darwin_arm64.tar.gz
-tar xzf memvault_VERSION_darwin_arm64.tar.gz
-sudo mv memvault /usr/local/bin/
-
-# Linux AMD64
-curl -LO https://github.com/memvault-org/memvault/releases/latest/download/memvault_VERSION_linux_amd64.tar.gz
-tar xzf memvault_VERSION_linux_amd64.tar.gz
-sudo mv memvault /usr/local/bin/
+curl -fsSL https://github.com/liyown/memvault/releases/latest/download/install.sh | bash
 ```
+
+The installer detects your platform, downloads the latest stable release, verifies
+SHA-256, and installs to `~/.local/bin`. It preserves the previous binary as
+`memvault.previous` when upgrading. Add `~/.local/bin` to your PATH, then run
+`memvault setup`.
+
+To choose a version or directory, download the script and set its options:
+
+```sh
+curl -fsSL https://github.com/liyown/memvault/releases/latest/download/install.sh -o install.sh
+VERSION=0.1.0 INSTALL_DIR="$HOME/.local/bin" bash install.sh
+```
+
+### Manual download
+
+[Releases](https://github.com/liyown/memvault/releases) includes macOS and Linux
+archives for ARM64 and AMD64, a Windows AMD64 ZIP, and `SHA256SUMS`. Verify the
+archive against `SHA256SUMS` before extracting and installing the binary.
 
 ### Build from Source
 
 Requires Go 1.26+, Node.js 20.19+/22.12+, npm:
 
 ```sh
-git clone https://github.com/memvault-org/memvault.git
+git clone https://github.com/liyown/memvault.git
 cd memvault
 make build
-sudo make install
+make install
 ```
 
 ---
@@ -296,7 +303,7 @@ See [VALIDATION.md](docs/VALIDATION.md) for detailed acceptance criteria.
 Contributions welcome! Please:
 
 1. Read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines
-2. Check [open issues](https://github.com/memvault-org/memvault/issues) for tasks
+2. Check [open issues](https://github.com/liyown/memvault/issues) for tasks
 3. Run `make test` before submitting PRs
 4. Follow Go + TypeScript coding standards in [`.claude/rules/`](.claude/rules/)
 

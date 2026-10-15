@@ -1,0 +1,28 @@
+class Memvault < Formula
+  desc "Local session memory and conversation archive"
+  homepage "https://github.com/liyown/memvault"
+  version "VERSION_PLACEHOLDER"
+  license "MIT"
+
+  if OS.mac? && Hardware::CPU.arm?
+    url "https://github.com/liyown/memvault/releases/download/vVERSION_PLACEHOLDER/memvault_VERSION_PLACEHOLDER_darwin_arm64.tar.gz"
+    sha256 "SHA256_ARM64_PLACEHOLDER"
+  elsif OS.mac? && Hardware::CPU.intel?
+    url "https://github.com/liyown/memvault/releases/download/vVERSION_PLACEHOLDER/memvault_VERSION_PLACEHOLDER_darwin_amd64.tar.gz"
+    sha256 "SHA256_AMD64_PLACEHOLDER"
+  elsif OS.linux? && Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
+    url "https://github.com/liyown/memvault/releases/download/vVERSION_PLACEHOLDER/memvault_VERSION_PLACEHOLDER_linux_arm64.tar.gz"
+    sha256 "SHA256_LINUX_ARM64_PLACEHOLDER"
+  elsif OS.linux? && Hardware::CPU.intel?
+    url "https://github.com/liyown/memvault/releases/download/vVERSION_PLACEHOLDER/memvault_VERSION_PLACEHOLDER_linux_amd64.tar.gz"
+    sha256 "SHA256_LINUX_AMD64_PLACEHOLDER"
+  end
+
+  def install
+    bin.install "memvault"
+  end
+
+  test do
+    assert_equal version.to_s, shell_output("#{bin}/memvault version").strip
+  end
+end

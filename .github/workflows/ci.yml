@@ -18,6 +18,11 @@ jobs:
         with:
           go-version-file: go.mod
 
+      - name: Check installation scripts
+        run: |
+          bash -n scripts/install.sh scripts/package.sh scripts/brew-formula.sh
+          python3 scripts/test_install.py
+
       - name: Go mod download
         run: go mod download
 

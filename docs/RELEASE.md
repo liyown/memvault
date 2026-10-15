@@ -1,87 +1,62 @@
 # Release Process
 
-## Automated Release via GitHub Actions
+The public repository is [liyown/memvault](https://github.com/liyown/memvault).
+Homebrew packages live in [liyown/homebrew-tap](https://github.com/liyown/homebrew-tap).
 
-### Prerequisites
-1. Ensure all tests pass: `go test ./...`
-2. Build and verify locally: `make dist`
-3. Update version if needed in code
+## Publish a version
 
-### Create Release
+Wait for CI on the intended main commit to pass, then create a semantic version tag:
 
-```bash
-# Tag the release
-git tag -a v0.1.0 -m "Release v0.1.0"
-
-# Push the tag to trigger CI
+```sh
+git tag -a v0.1.0 -m 'Release v0.1.0'
 git push origin v0.1.0
 ```
 
-The GitHub Actions workflow will:
-- Build all platform binaries
-- Generate checksums
-- Create a GitHub release with artifacts
-- Attach Darwin (macOS), Linux, and Windows builds
+The Release workflow tests the code and installer, builds all five platform packages,
+checks a local Linux installation, and publishes these assets:
 
-### Update Homebrew Formula
+- macOS ARM64 and AMD64 `.tar.gz` archives
+- Linux ARM64 and AMD64 `.tar.gz` archives
+- Windows AMD64 `.zip` archive
+- `SHA256SUMS`, `install.sh`, and a generated `memvault.rb` formula
 
-After the GitHub release is created:
+For stable tags, a second job downloads the published formula and commits it to
+`Formula/memvault.rb` in the tap. The `HOMEBREW_TAP_DEPLOY_KEY` repository secret
+holds an SSH deploy key with write access to that tap only. Its public key is
+registered in the tap repository's deploy keys. No personal access token is needed.
+If the tap update fails after publication, fix the problem and rerun the failed job.
 
-```bash
-# Generate the formula (using the built artifacts)
+Tags with a suffix, such as `v0.2.0-rc.1`, create prereleases and do not update the
+stable Homebrew formula. Install prereleases by explicitly setting `VERSION`.
+
+## Install and verify
+
+```sh
+brew install liyown/tap/memvault
+brew test liyown/tap/memvault
+
+curl -fsSL https://github.com/liyown/memvault/releases/latest/download/install.sh -o install.sh
+INSTALL_DIR="$(mktemp -d)/bin" bash install.sh
+```
+
+The installer checks SHA-256 before replacing a binary. An explicit `VERSION=0.1.0`
+selects that release. If `DIST_DIR` (default `dist`) contains the matching archive
+and `SHA256SUMS`, it installs locally without downloading the package. Otherwise,
+it downloads from GitHub. `REPO`, `BASE_URL`, and `API_URL` can override the source
+for forks and local testing.
+
+## Build packages locally
+
+```sh
+VERSION=0.1.0 make dist
 ./scripts/brew-formula.sh 0.1.0
-
-# The script outputs: homebrew/memvault-0.1.0.rb
+VERSION=0.1.0 INSTALL_DIR="$(mktemp -d)/bin" bash scripts/install.sh
 ```
 
-Then update the tap repository:
+Only archives for the current version are included in `SHA256SUMS`; old local
+packages are not published by the clean CI checkout. `scripts/brew-formula.sh`
+uses those same archives to produce `dist/memvault.rb`. The source template is
+`homebrew/memvault.rb.in`; it is not an installable formula.
 
-```bash
-# Clone or navigate to homebrew-tap repo
-git clone git@github.com:memvault-org/homebrew-tap.git
-cd homebrew-tap
-
-# Copy the generated formula
-cp ../memvault/homebrew/memvault-0.1.0.rb Formula/memvault.rb
-
-# Commit and push
-git add Formula/memvault.rb
-git commit -m "memvault: update to 0.1.0"
-git push origin main
-```
-
-Users can then install via:
-```bash
-brew tap memvault-org/tap
-brew install memvault
-```
-
-## Manual Release
-
-If you need to release without CI:
-
-```bash
-# Set version
-export VERSION=0.1.0
-
-# Build all platforms
-make dist
-
-# Generate Homebrew formula
-./scripts/brew-formula.sh $VERSION
-
-# Create GitHub release manually and upload dist/*.tar.gz and dist/*.zip
-```
-
-## Version Injection
-
-The build system injects the version at compile time:
-
-```bash
-go build -ldflags "-X memvault/internal/app.Version=0.1.0" ./cmd/memvault
-```
-
-Verify with:
-```bash
-./memvault version
-```
+Versions are injected at build time with
+`-X memvault/internal/app.Version=<version>`. Verify with `memvault version`.

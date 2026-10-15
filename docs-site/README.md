@@ -54,7 +54,7 @@ docs-site/
 
 Documentation is automatically deployed to GitHub Pages on every push to `main` via `.github/workflows/deploy-docs.yml`.
 
-**Live URL**: https://memvault-org.github.io/memvault/
+**Live URL**: https://liyown.github.io/memvault/
 
 ## Contributing
 

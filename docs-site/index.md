@@ -17,7 +17,7 @@ hero:
       link: /concepts/why-local-first
     - theme: alt
       text: View on GitHub
-      link: https://github.com/memvault-org/memvault
+      link: https://github.com/liyown/memvault
 
 features:
   - icon: 🗄️
@@ -44,7 +44,7 @@ features:
 
 ```sh
 # Install via Homebrew (macOS)
-brew install memvault
+brew install liyown/tap/memvault
 
 # Initialize your vault
 memvault setup --root ~/my-memory-vault
@@ -89,11 +89,11 @@ Conversations from Codex, Claude Code, and OpenCode are now archived automatical
 
 ## Open Source & Community Driven
 
-Memvault is [MIT licensed](https://github.com/memvault-org/memvault/blob/main/LICENSE) and built in the open. Join the community:
+Memvault is [MIT licensed](https://github.com/liyown/memvault/blob/main/LICENSE) and built in the open. Join the community:
 
-- [GitHub Discussions](https://github.com/memvault-org/memvault/discussions)
-- [Report Issues](https://github.com/memvault-org/memvault/issues)
-- [Contribute](https://github.com/memvault-org/memvault/blob/main/CONTRIBUTING.md)
+- [GitHub Discussions](https://github.com/liyown/memvault/discussions)
+- [Report Issues](https://github.com/liyown/memvault/issues)
+- [Contribute](https://github.com/liyown/memvault/blob/main/CONTRIBUTING.md)
 
 <style>
 .comparison-grid {

@@ -1,81 +1,91 @@
 #!/usr/bin/env bash
-# Install memvault from local dist or download from release
+# Install a checksum-verified release, or an explicitly versioned local package.
 set -euo pipefail
 
-VERSION="${VERSION:-0.1.0-preview}"
+REPO="${REPO:-liyown/memvault}"
+VERSION="${VERSION:-}"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
-BASE_URL="${BASE_URL:-https://github.com/liuyaowen/memvault/releases/download}"
+DIST_DIR="${DIST_DIR:-dist}"
+BASE_URL="${BASE_URL:-https://github.com/${REPO}/releases/download}"
+API_URL="${API_URL:-https://api.github.com/repos/${REPO}/releases/latest}"
+TEMP_DIR=""
+trap 'if [ -n "$TEMP_DIR" ]; then rm -rf "$TEMP_DIR"; fi' EXIT
+
+fail() { echo "Error: $*" >&2; exit 1; }
 
 detect_platform() {
   local os arch
   case "$(uname -s)" in
     Darwin) os="darwin" ;;
-    Linux)  os="linux" ;;
+    Linux) os="linux" ;;
     MINGW*|MSYS*|CYGWIN*) os="windows" ;;
-    *) echo "Unsupported OS: $(uname -s)" >&2; exit 1 ;;
+    *) fail "Unsupported OS: $(uname -s)" ;;
   esac
-
   case "$(uname -m)" in
     x86_64|amd64) arch="amd64" ;;
     arm64|aarch64) arch="arm64" ;;
-    *) echo "Unsupported architecture: $(uname -m)" >&2; exit 1 ;;
+    *) fail "Unsupported architecture: $(uname -m)" ;;
   esac
-
+  [ "$os/$arch" != "windows/arm64" ] || fail "Windows ARM64 packages are not available"
   echo "${os}_${arch}"
 }
 
-main() {
-  local platform
-  platform="$(detect_platform)"
-  local archive_name="memvault_${VERSION}_${platform}"
-
-  echo "==> Installing memvault ${VERSION} for ${platform}"
-
-  # Try local dist first
-  if [ -f "dist/${archive_name}.tar.gz" ]; then
-    echo "==> Found local package"
-    tar xzf "dist/${archive_name}.tar.gz" -C /tmp
-  elif [ -f "dist/${archive_name}.zip" ]; then
-    echo "==> Found local package"
-    unzip -q "dist/${archive_name}.zip" -d /tmp
+checksum() {
+  if command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | awk '{print $1}'
+  elif command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$1" | awk '{print $1}'
   else
-    # Download from release
-    local url
-    if [ "$platform" = "windows_amd64" ]; then
-      url="${BASE_URL}/v${VERSION}/${archive_name}.zip"
-      echo "==> Downloading ${url}"
-      curl -fsSL -o "/tmp/${archive_name}.zip" "$url"
-      unzip -q "/tmp/${archive_name}.zip" -d /tmp
-      rm "/tmp/${archive_name}.zip"
-    else
-      url="${BASE_URL}/v${VERSION}/${archive_name}.tar.gz"
-      echo "==> Downloading ${url}"
-      curl -fsSL "$url" | tar xz -C /tmp
-    fi
+    fail "sha256sum or shasum is required"
   fi
+}
 
-  # Install
+main() {
+  local platform archive binary expected actual
+  platform="$(detect_platform)"
+  TEMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/memvault-install.XXXXXX")"
+  if [ -z "$VERSION" ]; then
+    echo "==> Finding latest release"
+    curl -fsSL --retry 3 "$API_URL" -o "$TEMP_DIR/release.json"
+    VERSION="$(sed -nE 's/.*"tag_name"[[:space:]]*:[[:space:]]*"([^"]+)".*/\1/p' "$TEMP_DIR/release.json" | head -1)"
+    [ -n "$VERSION" ] || fail "Could not determine the latest release; set VERSION explicitly"
+  fi
+  VERSION="${VERSION#v}"
+  [[ "$VERSION" =~ ^[0-9A-Za-z][0-9A-Za-z.+-]*$ ]] || fail "Invalid version: $VERSION"
+  binary="memvault"
+  archive="memvault_${VERSION}_${platform}.tar.gz"
+  if [ "$platform" = "windows_amd64" ]; then
+    binary="memvault.exe"
+    archive="memvault_${VERSION}_${platform}.zip"
+  fi
+  echo "==> Installing memvault ${VERSION} for ${platform}"
+  if [ -f "$DIST_DIR/$archive" ]; then
+    [ -f "$DIST_DIR/SHA256SUMS" ] || fail "Local package is missing SHA256SUMS"
+    cp "$DIST_DIR/$archive" "$TEMP_DIR/$archive"
+    cp "$DIST_DIR/SHA256SUMS" "$TEMP_DIR/SHA256SUMS"
+  else
+    curl -fsSL --retry 3 "${BASE_URL}/v${VERSION}/${archive}" -o "$TEMP_DIR/$archive"
+    curl -fsSL --retry 3 "${BASE_URL}/v${VERSION}/SHA256SUMS" -o "$TEMP_DIR/SHA256SUMS"
+  fi
+  expected="$(awk -v name="$archive" '$2 == name || $2 == "*" name {print $1}' "$TEMP_DIR/SHA256SUMS")"
+  [[ "$expected" =~ ^[0-9a-fA-F]{64}$ ]] || fail "Missing or invalid checksum for $archive"
+  actual="$(checksum "$TEMP_DIR/$archive")"
+  [ "$actual" = "$expected" ] || fail "SHA-256 mismatch for $archive; existing installation was preserved"
+  if [ "$platform" = "windows_amd64" ]; then
+    unzip -q "$TEMP_DIR/$archive" "$binary" -d "$TEMP_DIR"
+  else
+    tar xzf "$TEMP_DIR/$archive" -C "$TEMP_DIR" "$binary"
+  fi
+  [ -f "$TEMP_DIR/$binary" ] || fail "Package does not contain $binary"
   mkdir -p "$INSTALL_DIR"
-  local binary="/tmp/memvault"
-  [ "$platform" = "windows_amd64" ] && binary="/tmp/memvault.exe"
-
-  if [ -f "${INSTALL_DIR}/memvault" ]; then
-    echo "==> Backing up existing binary"
-    cp "${INSTALL_DIR}/memvault" "${INSTALL_DIR}/memvault.previous"
+  if [ -f "$INSTALL_DIR/$binary" ]; then
+    cp "$INSTALL_DIR/$binary" "$INSTALL_DIR/$binary.previous"
   fi
-
-  echo "==> Installing to ${INSTALL_DIR}"
-  cp "$binary" "${INSTALL_DIR}/memvault.installing"
-  chmod 755 "${INSTALL_DIR}/memvault.installing"
-  mv "${INSTALL_DIR}/memvault.installing" "${INSTALL_DIR}/memvault"
-  rm -f "$binary"
-
-  echo "==> memvault installed successfully"
-  echo ""
-  echo "Run 'memvault setup' to initialize"
-  echo ""
-  echo "Add ${INSTALL_DIR} to PATH if not already:"
-  echo "  export PATH=\"${INSTALL_DIR}:\$PATH\""
+  cp "$TEMP_DIR/$binary" "$INSTALL_DIR/$binary.installing"
+  chmod 755 "$INSTALL_DIR/$binary.installing"
+  mv -f "$INSTALL_DIR/$binary.installing" "$INSTALL_DIR/$binary"
+  echo "==> Installed $INSTALL_DIR/$binary"
+  echo "Run 'memvault setup' to initialize. Ensure $INSTALL_DIR is on your PATH."
 }
 
 main "$@"

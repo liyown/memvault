@@ -2,11 +2,14 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    tags: ['v*']
 
 permissions:
   contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -27,57 +30,95 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Build web assets
-        run: |
-          cd web
-          npm ci
-          npm run build
-
-      - name: Extract version
-        id: version
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          COMMIT=$(git rev-parse --short HEAD)
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "commit=$COMMIT" >> $GITHUB_OUTPUT
-
-      - name: Build all platforms
+      - name: Validate release version
         env:
-          VERSION: ${{ steps.version.outputs.version }}
-          COMMIT: ${{ steps.version.outputs.commit }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          [[ "$RELEASE_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
+
+      - name: Test
+        run: |
+          go test -race ./...
+          go vet ./...
+          python3 scripts/test_install.py
+
+      - name: Build packages and formula
+        env:
+          VERSION: ${{ github.ref_name }}
         run: |
           make dist
+          ./scripts/brew-formula.sh "$VERSION"
+          cp scripts/install.sh dist/install.sh
 
-      - name: Generate checksums
+      - name: Smoke test installer
+        env:
+          VERSION: ${{ github.ref_name }}
+          INSTALL_DIR: ${{ runner.temp }}/memvault-install
         run: |
-          cd dist
-          sha256sum *.tar.gz *.zip > SHA256SUMS
+          bash dist/install.sh
+          test "$("$INSTALL_DIR/memvault" version)" = "${VERSION#v}"
 
-      - name: Create Release
+      - name: Publish release assets
         uses: softprops/action-gh-release@v3
         with:
           files: |
-            dist/*.tar.gz
-            dist/*.zip
+            dist/memvault_*.tar.gz
+            dist/memvault_*.zip
             dist/SHA256SUMS
-          body: |
-            Release ${{ steps.version.outputs.version }}
-
-            Commit: ${{ steps.version.outputs.commit }}
-
-            ## Installation
-
-            ### macOS (Homebrew)
-            ```bash
-            brew tap memvault-org/tap
-            brew install memvault
-            ```
-
-            ### Manual
-            Download the appropriate archive for your platform and extract it:
-            ```bash
-            tar xzf memvault_${{ steps.version.outputs.version }}_linux_amd64.tar.gz
-            sudo mv memvault /usr/local/bin/
-            ```
+            dist/memvault.rb
+            dist/install.sh
+          fail_on_unmatched_files: true
+          generate_release_notes: true
           draft: false
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          make_latest: ${{ !contains(github.ref_name, '-') }}
+          body: |
+            ## Install
+
+            Homebrew (macOS / Linux):
+            ```sh
+            brew install liyown/tap/memvault
+            ```
+
+            Shell installer (latest stable release, SHA-256 verified):
+            ```sh
+            curl -fsSL https://github.com/liyown/memvault/releases/latest/download/install.sh | bash
+            ```
+
+            For this specific release, download its install.sh and run it with VERSION set to the tag shown above. Archives for macOS, Linux, and Windows and their SHA256SUMS are attached below.
+
+  homebrew:
+    needs: build
+    if: ${{ !contains(github.ref_name, '-') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tap
+        uses: actions/checkout@v4
+        with:
+          repository: liyown/homebrew-tap
+          ref: main
+          ssh-key: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}
+          path: tap
+
+      - name: Download published formula
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_REPO: ${{ github.repository }}
+        run: |
+          gh release download "$RELEASE_TAG" --repo "$RELEASE_REPO" --pattern memvault.rb --dir "$RUNNER_TEMP/formula"
+          mkdir -p tap/Formula
+          cp "$RUNNER_TEMP/formula/memvault.rb" tap/Formula/memvault.rb
+
+      - name: Update tap
+        working-directory: tap
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Formula/memvault.rb
+          if ! git diff --cached --quiet; then
+            git commit -m "memvault ${RELEASE_TAG#v}"
+            git push origin main
+          fi
