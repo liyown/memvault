@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"sync"
@@ -1050,7 +1051,7 @@ func (e *Engine) Diagnose() map[string]any {
 	}
 	issues := append([]string{}, e.ScanErrors...)
 	if _, err := os.Stat(filepath.Join(e.Config.Root, "memvault.json")); err != nil {
-		issues = append(issues, "记忆目录暂不可用；新资料暂存本机，恢复后自动补写，尚未确认归档到记忆目录")
+		issues = append(issues, vaultUnavailableIssue(err))
 	}
 	e.statusMu.RUnlock()
 	sort.Slice(sources, func(i, j int) bool { return sources[i].Agent < sources[j].Agent })
@@ -1059,6 +1060,19 @@ func (e *Engine) Diagnose() map[string]any {
 	_ = e.DB.QueryRow("SELECT count(*) FROM messages").Scan(&messages)
 	_ = e.DB.QueryRow("SELECT count(DISTINCT id) FROM memories").Scan(&memories)
 	return map[string]any{"version": Version, "root": e.Config.Root, "sessions": sessions, "messages": messages, "memories": memories, "sources": sources, "issues": issues, "time": utc()}
+}
+
+// vaultUnavailableIssue explains why the vault cannot be read, naming the fix
+// when the operating system, not the disk, is refusing access.
+func vaultUnavailableIssue(err error) string {
+	const pending = "新资料暂存本机，恢复后自动补写，尚未确认归档到记忆目录"
+	if os.IsPermission(err) {
+		if runtime.GOOS == "darwin" {
+			return "系统拒绝后台访问记忆目录；请在“系统设置 › 隐私与安全性 › 完全磁盘访问权限”中加入 memvault 后运行 memvault repair --action service。" + pending
+		}
+		return "没有权限读取记忆目录；请检查目录权限。" + pending
+	}
+	return "记忆目录暂不可用；" + pending
 }
 func withTimeout(ctx context.Context, d time.Duration) (context.Context, context.CancelFunc) {
 	return context.WithTimeout(ctx, d)

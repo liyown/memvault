@@ -471,6 +471,12 @@ func (s *Server) api(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 			response(w, value, err)
+		} else if p.Action == "service" {
+			if err := serviceInstall(e.configSnapshot(), false); err != nil {
+				response(w, nil, err)
+			} else {
+				response(w, map[string]any{"ok": true}, nil)
+			}
 		} else {
 			response(w, nil, fail("未知修复操作"))
 		}
