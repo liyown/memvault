@@ -1,8 +1,42 @@
 # Memvault
 
-会话与记忆保存在你控制的本地目录。Codex、Claude Code 和 OpenCode 是入口；已归档的资料不依赖原平台继续存在。
+会话与记忆保存在你控制的本地目录。Codex、Claude Code 和 OpenCode 是入口;已归档的资料不依赖原平台继续存在。
 
-当前版本为 **0.1.0-preview**。这是可运行的归档、检索与 agent 记忆闭环，尚未宣称通过全部 1.0 发布门槛。实际验证范围见 [验收记录](docs/VALIDATION.md)。
+当前版本为 **0.1.0-preview**。这是可运行的归档、检索与 agent 记忆闭环,尚未宣称通过全部 1.0 发布门槛。实际验证范围见 [验收记录](docs/VALIDATION.md)。
+
+## 安装
+
+### macOS (Homebrew)
+
+```sh
+brew tap memvault-org/tap
+brew install memvault
+```
+
+### 手动安装
+
+从 [Releases](https://github.com/memvault-org/memvault/releases) 下载对应平台的压缩包:
+
+```sh
+# macOS ARM64
+curl -LO https://github.com/memvault-org/memvault/releases/latest/download/memvault_VERSION_darwin_arm64.tar.gz
+tar xzf memvault_VERSION_darwin_arm64.tar.gz
+sudo mv memvault /usr/local/bin/
+
+# Linux AMD64
+curl -LO https://github.com/memvault-org/memvault/releases/latest/download/memvault_VERSION_linux_amd64.tar.gz
+tar xzf memvault_VERSION_linux_amd64.tar.gz
+sudo mv memvault /usr/local/bin/
+```
+
+### 从源码构建
+
+```sh
+git clone https://github.com/memvault-org/memvault.git
+cd memvault
+make dist
+./scripts/install.sh
+```
 
 ## 使用
 
