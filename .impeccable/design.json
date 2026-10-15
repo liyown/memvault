@@ -1,0 +1,399 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-15T06:29:46.990751+00:00",
+  "title": "Design System: Memvault · 档案阅读室",
+  "extensions": {
+    "colorMeta": {
+      "paper": {
+        "role": "neutral",
+        "displayName": "暖白纸面",
+        "tonalRamp": [
+          "oklch(15% 0.0054 95.10)",
+          "oklch(26% 0.0054 95.10)",
+          "oklch(38% 0.0054 95.10)",
+          "oklch(49% 0.0054 95.10)",
+          "oklch(61% 0.0054 95.10)",
+          "oklch(72% 0.0054 95.10)",
+          "oklch(84% 0.0054 95.10)",
+          "oklch(95% 0.0054 95.10)"
+        ]
+      },
+      "sidebar": {
+        "role": "neutral",
+        "displayName": "灰绿目录",
+        "tonalRamp": [
+          "oklch(15% 0.0093 106.58)",
+          "oklch(26% 0.0093 106.58)",
+          "oklch(38% 0.0093 106.58)",
+          "oklch(49% 0.0093 106.58)",
+          "oklch(61% 0.0093 106.58)",
+          "oklch(72% 0.0093 106.58)",
+          "oklch(84% 0.0093 106.58)",
+          "oklch(95% 0.0093 106.58)"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "墨色",
+        "tonalRamp": [
+          "oklch(15% 0.0113 145.28)",
+          "oklch(26% 0.0113 145.28)",
+          "oklch(38% 0.0113 145.28)",
+          "oklch(49% 0.0113 145.28)",
+          "oklch(61% 0.0113 145.28)",
+          "oklch(72% 0.0113 145.28)",
+          "oklch(84% 0.0113 145.28)",
+          "oklch(95% 0.0113 145.28)"
+        ]
+      },
+      "prose": {
+        "role": "neutral",
+        "displayName": "正文灰绿",
+        "tonalRamp": [
+          "oklch(15% 0.0216 132.17)",
+          "oklch(26% 0.0216 132.17)",
+          "oklch(38% 0.0216 132.17)",
+          "oklch(49% 0.0216 132.17)",
+          "oklch(61% 0.0216 132.17)",
+          "oklch(72% 0.0216 132.17)",
+          "oklch(84% 0.0216 132.17)",
+          "oklch(95% 0.0216 132.17)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "次级灰绿",
+        "tonalRamp": [
+          "oklch(15% 0.0372 131.02)",
+          "oklch(26% 0.0372 131.02)",
+          "oklch(38% 0.0372 131.02)",
+          "oklch(49% 0.0372 131.02)",
+          "oklch(61% 0.0372 131.02)",
+          "oklch(72% 0.0372 131.02)",
+          "oklch(84% 0.0372 131.02)",
+          "oklch(95% 0.0372 131.02)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "浅灰绿边线",
+        "tonalRamp": [
+          "oklch(15% 0.0134 111.29)",
+          "oklch(26% 0.0134 111.29)",
+          "oklch(38% 0.0134 111.29)",
+          "oklch(49% 0.0134 111.29)",
+          "oklch(61% 0.0134 111.29)",
+          "oklch(72% 0.0134 111.29)",
+          "oklch(84% 0.0134 111.29)",
+          "oklch(95% 0.0134 111.29)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "森林绿",
+        "tonalRamp": [
+          "oklch(15% 0.0478 153.94)",
+          "oklch(26% 0.0478 153.94)",
+          "oklch(38% 0.0478 153.94)",
+          "oklch(49% 0.0478 153.94)",
+          "oklch(61% 0.0478 153.94)",
+          "oklch(72% 0.0478 153.94)",
+          "oklch(84% 0.0478 153.94)",
+          "oklch(95% 0.0478 153.94)"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "深森林绿",
+        "tonalRamp": [
+          "oklch(15% 0.0450 154.58)",
+          "oklch(26% 0.0450 154.58)",
+          "oklch(38% 0.0450 154.58)",
+          "oklch(49% 0.0450 154.58)",
+          "oklch(61% 0.0450 154.58)",
+          "oklch(72% 0.0450 154.58)",
+          "oklch(84% 0.0450 154.58)",
+          "oklch(95% 0.0450 154.58)"
+        ]
+      },
+      "selection": {
+        "role": "primary",
+        "displayName": "浅叶绿目录选择",
+        "tonalRamp": [
+          "oklch(15% 0.0171 128.66)",
+          "oklch(26% 0.0171 128.66)",
+          "oklch(38% 0.0171 128.66)",
+          "oklch(49% 0.0171 128.66)",
+          "oklch(61% 0.0171 128.66)",
+          "oklch(72% 0.0171 128.66)",
+          "oklch(84% 0.0171 128.66)",
+          "oklch(95% 0.0171 128.66)"
+        ]
+      },
+      "nav-selection": {
+        "role": "primary",
+        "displayName": "浅叶绿导航选择",
+        "tonalRamp": [
+          "oklch(15% 0.0202 128.71)",
+          "oklch(26% 0.0202 128.71)",
+          "oklch(38% 0.0202 128.71)",
+          "oklch(49% 0.0202 128.71)",
+          "oklch(61% 0.0202 128.71)",
+          "oklch(72% 0.0202 128.71)",
+          "oklch(84% 0.0202 128.71)",
+          "oklch(95% 0.0202 128.71)"
+        ]
+      },
+      "warning": {
+        "role": "functional",
+        "displayName": "赭色提示",
+        "tonalRamp": [
+          "oklch(15% 0.0853 62.52)",
+          "oklch(26% 0.0853 62.52)",
+          "oklch(38% 0.0853 62.52)",
+          "oklch(49% 0.0853 62.52)",
+          "oklch(61% 0.0853 62.52)",
+          "oklch(72% 0.0853 62.52)",
+          "oklch(84% 0.0853 62.52)",
+          "oklch(95% 0.0853 62.52)"
+        ]
+      },
+      "danger": {
+        "role": "functional",
+        "displayName": "暗红危险操作",
+        "tonalRamp": [
+          "oklch(15% 0.1365 26.53)",
+          "oklch(26% 0.1365 26.53)",
+          "oklch(38% 0.1365 26.53)",
+          "oklch(49% 0.1365 26.53)",
+          "oklch(61% 0.1365 26.53)",
+          "oklch(72% 0.1365 26.53)",
+          "oklch(84% 0.1365 26.53)",
+          "oklch(95% 0.1365 26.53)"
+        ]
+      },
+      "page-bg": {
+        "role": "neutral",
+        "displayName": "轻灰画布",
+        "tonalRamp": [
+          "oklch(15% 0.0066 106.52)",
+          "oklch(26% 0.0066 106.52)",
+          "oklch(38% 0.0066 106.52)",
+          "oklch(49% 0.0066 106.52)",
+          "oklch(61% 0.0066 106.52)",
+          "oklch(72% 0.0066 106.52)",
+          "oklch(84% 0.0066 106.52)",
+          "oklch(95% 0.0066 106.52)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "headline": {
+        "displayName": "页面标题",
+        "purpose": "紧凑工作页面的标题，手机缩为 24px。"
+      },
+      "title": {
+        "displayName": "会话标题",
+        "purpose": "阅读器标题，按断点收敛为 17px / 16px。"
+      },
+      "body": {
+        "displayName": "长文正文",
+        "purpose": "桌面会话与记忆的连续阅读，最大 76ch。"
+      },
+      "body-mobile": {
+        "displayName": "窄屏正文",
+        "purpose": "800px 以下连续阅读。"
+      },
+      "label": {
+        "displayName": "界面标签",
+        "purpose": "控件、说明与常规辅助文字。"
+      },
+      "code": {
+        "displayName": "代码块",
+        "purpose": "独立等宽与内部滚动。"
+      }
+    },
+    "shadows": [
+      {
+        "name": "popover",
+        "value": "0 8px 25px #26352226",
+        "purpose": "继续会话菜单。"
+      },
+      {
+        "name": "toast",
+        "value": "0 8px 30px #1c301f26",
+        "purpose": "底部短暂提示。"
+      },
+      {
+        "name": "dialog",
+        "value": "0 18px 80px #26332233",
+        "purpose": "遗忘影响确认。"
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-state",
+        "value": "140ms",
+        "purpose": "控件背景、边框和文字状态切换。"
+      },
+      {
+        "name": "panel",
+        "value": "240ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "桌面侧栏、移动端抽屉及设置展开。仅桌面侧栏允许 width/margin-left 过渡以让出阅读宽度。"
+      },
+      {
+        "name": "loading",
+        "value": "900ms linear infinite",
+        "purpose": "异步操作与读取状态。"
+      },
+      {
+        "name": "reduced-motion",
+        "value": "scroll-behavior: auto; transition: none; animation: none",
+        "purpose": "尊重系统减少动态效果设置。"
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide",
+        "value": "1500px"
+      },
+      {
+        "name": "compact-desktop",
+        "value": "1100px"
+      },
+      {
+        "name": "drawer-navigation",
+        "value": "800px"
+      },
+      {
+        "name": "phone-reader",
+        "value": "540px"
+      }
+    ],
+    "controlTokens": {
+      "height": "40px",
+      "compact": "32px",
+      "icon": "16px",
+      "border": "#cbd1c3",
+      "hover": "#eeeee7",
+      "disabled": "#f0f1eb",
+      "focus": "2px solid #64836c; offset:2px",
+      "radius": "7px",
+      "sidebarRail": "72px",
+      "source": "app/web/src/style.css :root",
+      "components": "app/web/src/ui.tsx"
+    }
+  },
+  "components": [
+    {
+      "name": "主按钮",
+      "kind": "button",
+      "description": "用于当前主要操作。",
+      "html": "<button class=\"ds-button-primary\">保存设置</button>",
+      "css": ".ds-button-primary {font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif;font-size:12px;border:1px solid #cbd1c3;border-radius:7px;min-height:40px;padding:8px 12px;cursor:pointer;line-height:1.25;transition:background .14s,color .14s,border-color .14s;background:var(--accent, #3d5a46);color:#fff;border-color:var(--accent, #3d5a46);} .ds-button-primary:hover {background:#304b39;border-color:#304b39;} .ds-button-primary:focus-visible {outline:2px solid #64836c;outline-offset:2px;} .ds-button-primary:disabled {background:#f0f1eb;border-color:#e3e4da;color:#59654f;cursor:not-allowed;}",
+      "refersTo": "button-primary"
+    },
+    {
+      "name": "次按钮",
+      "kind": "button",
+      "description": "用于导入、导出等次级操作。",
+      "html": "<button class=\"ds-button-secondary\">导出档案</button>",
+      "css": ".ds-button-secondary {font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif;font-size:12px;border:1px solid #cbd1c3;border-radius:7px;min-height:40px;padding:8px 12px;cursor:pointer;line-height:1.25;transition:background .14s,color .14s,border-color .14s;background:var(--paper, #fffefa);color:var(--ink, #292e29);border-color:#cbd1c3;} .ds-button-secondary:hover {background:#eeeee7;border-color:#c1c7b9;} .ds-button-secondary:focus-visible {outline:2px solid #64836c;outline-offset:2px;} .ds-button-secondary:disabled {background:#f0f1eb;border-color:#e3e4da;color:#59654f;cursor:not-allowed;}",
+      "refersTo": "button-secondary"
+    },
+    {
+      "name": "安静按钮",
+      "kind": "button",
+      "description": "用于工具条中的次级操作。",
+      "html": "<button class=\"ds-button-quiet\">查看原文</button>",
+      "css": ".ds-button-quiet {font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif;font-size:12px;border:1px solid #cbd1c3;border-radius:7px;min-height:40px;padding:8px 12px;cursor:pointer;line-height:1.25;transition:background .14s,color .14s,border-color .14s;background:transparent;color:#5f675b;border-color:transparent;} .ds-button-quiet:hover {background:#eeeee7;border-color:#c1c7b9;} .ds-button-quiet:focus-visible {outline:2px solid #64836c;outline-offset:2px;} .ds-button-quiet:disabled {background:#f0f1eb;border-color:#e3e4da;color:#59654f;cursor:not-allowed;}"
+    },
+    {
+      "name": "危险按钮",
+      "kind": "button",
+      "description": "用于完成影响预览后的遗忘确认。",
+      "html": "<button class=\"ds-button-danger\">确认遗忘</button>",
+      "css": ".ds-button-danger {font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif;font-size:12px;border:1px solid #cbd1c3;border-radius:7px;min-height:40px;padding:8px 12px;cursor:pointer;line-height:1.25;transition:background .14s,color .14s,border-color .14s;background:var(--danger, #a33d37);color:#fff;border-color:var(--danger, #a33d37);} .ds-button-danger:hover {background:#842f2a;border-color:#842f2a;} .ds-button-danger:focus-visible {outline:2px solid #64836c;outline-offset:2px;} .ds-button-danger:disabled {background:#f0f1eb;border-color:#e3e4da;color:#59654f;cursor:not-allowed;}",
+      "refersTo": "button-danger"
+    },
+    {
+      "name": "复合搜索框",
+      "kind": "input",
+      "description": "焦点落在完整外框；桌面显示快捷键提示。",
+      "html": "<label class=\"ds-search\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.7\" aria-hidden=\"true\"><circle cx=\"10.5\" cy=\"10.5\" r=\"6.5\"/><path d=\"m16 16 4.5 4.5\"/></svg><input aria-label=\"搜索会话、原文与记忆\" placeholder=\"搜索会话、原文与记忆…\"><kbd>⌘ K</kbd></label>",
+      "css": ".ds-search {font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif;font-size:12px;display:flex;align-items:center;gap:10px;border:1px solid #d8dbcf;border-radius:8px;background:var(--paper, #fffefa);color:var(--muted, #59654f);padding:0 13px;} .ds-search input {font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif;font-size:12px;flex:1;min-width:0;border:0;background:transparent;padding:11px 0;color:var(--ink, #292e29);outline:none;} .ds-search input::placeholder {color:var(--muted, #59654f);} .ds-search kbd {font:inherit;font-size:10px;border:1px solid #e0e2d8;border-radius:4px;padding:2px 4px;white-space:nowrap;} .ds-search:hover {border-color:#c1c7b9;} .ds-search:focus-within {outline:2px solid var(--accent, #3d5a46);outline-offset:2px;border-color:var(--accent, #3d5a46);}"
+    },
+    {
+      "name": "系统导航",
+      "kind": "nav",
+      "refersTo": "navigation-active",
+      "description": "四项持久导航；浅绿整行标记当前页。",
+      "html": "<nav class=\"ds-nav\" aria-label=\"主要导航\"><button class=\"ds-nav-active\" aria-current=\"page\">会话 <small>12</small></button><button>记忆 <small>8</small></button><button>接入</button><button>设置</button></nav>",
+      "css": ".ds-nav {font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif;font-size:12px;display:flex;flex-direction:column;gap:5px;background:var(--sidebar, #efefe8);padding:16px;width:186px;} .ds-nav button {font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif;font-size:12px;display:flex;align-items:center;gap:12px;width:100%;border:0;border-radius:7px;text-align:left;min-height:43px;padding:11px 15px;background:transparent;color:#656d5e;cursor:pointer;transition:background .16s;} .ds-nav button:hover {background:#e6e8de;} .ds-nav .ds-nav-active {background:#dfe6d8;color:#354d38;font-weight:600;} .ds-nav small {margin-left:auto;font-size:11px;font-weight:450;color:#66705e;} .ds-nav button:focus-visible {outline:2px solid #64836c;outline-offset:2px;}"
+    },
+    {
+      "name": "记忆类别筛选",
+      "kind": "chip",
+      "description": "安静按钮组成可换行的类别筛选。",
+      "html": "<div class=\"ds-filters\"><button class=\"ds-filter-active\" aria-pressed=\"true\">全部记忆</button><button aria-pressed=\"false\">个人背景</button><button aria-pressed=\"false\">偏好与约定</button></div>",
+      "css": ".ds-filters {display:flex;gap:8px;flex-wrap:wrap;} .ds-filters button {font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif;font-size:12px;font-size:11px;background:transparent;border:1px solid transparent;border-radius:7px;color:var(--muted, #59654f);min-height:31px;padding:7px 12px;cursor:pointer;transition:background .16s;} .ds-filters button:hover {background:#eeeee7;border-color:#c1c7b9;} .ds-filters .ds-filter-active {background:#e5ebdc;color:#526a42;} .ds-filters button:focus-visible {outline:2px solid #64836c;outline-offset:2px;}"
+    },
+    {
+      "name": "档案目录行",
+      "kind": "custom",
+      "description": "示例内容展示选中行的来源、标题与归档层级。",
+      "html": "<button class=\"ds-archive-row\" aria-pressed=\"true\"><span class=\"ds-row-meta\">Codex <span>10/15</span></span><strong>本地会话与记忆的阅读方式</strong><span class=\"ds-row-meta\">示例目录项 <span>原文归档状态</span></span></button>",
+      "css": ".ds-archive-row {font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif;font-size:12px;position:relative;display:block;text-align:left;width:290px;border:0;border-bottom:1px solid #e8e9e1;border-radius:0;background:var(--selection, #eaf0e4);padding:17px 18px 15px;cursor:pointer;} .ds-archive-row::before {content:\"\";position:absolute;left:0;top:0;bottom:0;width:2px;background:#728967;} .ds-row-meta {display:flex;justify-content:space-between;gap:8px;color:var(--muted, #59654f);font-size:10px;} .ds-archive-row strong {display:block;font-size:12px;font-weight:550;line-height:1.7;margin:10px 0 12px;color:var(--ink, #292e29);} .ds-archive-row:hover {background:#f0f2e9;} .ds-archive-row:focus-visible {outline:2px solid #64836c;outline-offset:2px;}"
+    },
+    {
+      "name": "阅读纸面",
+      "kind": "card",
+      "refersTo": "reading-workspace",
+      "description": "档案容器使用纸面和边线，常驻时无阴影。",
+      "html": "<article class=\"ds-reading\"><h2>档案正文</h2><p>正文与目录分别保持合适的密度。长文沿纸面连续展开，来源与时间在辅助层清楚呈现。</p><a href=\"#source\">查看来源证据</a></article>",
+      "css": ".ds-reading {font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif;background:var(--paper, #fffefa);border:1px solid var(--line, #e3e4da);border-radius:10px 10px 0 0;padding:25px 28px;color:var(--prose, #454c40);max-width:76ch;} .ds-reading h2 {font-size:19px;font-weight:600;line-height:1.65;margin:0 0 15px;color:var(--ink, #292e29);} .ds-reading p {font-size:16px;line-height:1.9;margin:0 0 13px;} .ds-reading a {font-size:12px;color:#426c51;text-decoration-thickness:1px;text-underline-offset:3px;} .ds-reading a:hover {color:var(--accent, #3d5a46);} .ds-reading a:focus-visible {outline:2px solid #64836c;outline-offset:2px;}"
+    },
+    {
+      "name": "正文标签页",
+      "kind": "nav",
+      "description": "正文与摘要使用底线，而不是凸起卡片。",
+      "html": "<nav class=\"ds-tabs\" aria-label=\"阅读内容\"><button class=\"ds-tab-active\" aria-current=\"page\">对话 <span>2</span></button><button>摘要</button></nav>",
+      "css": ".ds-tabs {font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif;font-size:12px;display:flex;gap:20px;height:44px;padding:0 28px;border-bottom:1px solid var(--line, #e3e4da);} .ds-tabs button {font-family:-apple-system, BlinkMacSystemFont, \"Segoe UI\", \"PingFang SC\", \"Microsoft YaHei\", sans-serif;font-size:12px;display:flex;align-items:center;gap:7px;position:relative;border:0;border-radius:0;padding:0 0 1px;background:transparent;color:var(--muted, #59654f);cursor:pointer;} .ds-tabs .ds-tab-active {color:#354d38;font-weight:600;} .ds-tab-active::after {content:\"\";height:2px;background:#4e6b48;position:absolute;left:0;right:0;bottom:-1px;} .ds-tabs span {font-size:10px;padding:1px 5px;border-radius:4px;background:#eef0e8;font-weight:400;} .ds-tabs button:hover {color:var(--accent, #3d5a46);} .ds-tabs button:focus-visible {outline:2px solid #64836c;outline-offset:2px;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "档案阅读室",
+    "overview": "把本地会话作为可以连续阅读、查证与接续的档案。暖白纸面承载正文，灰绿目录提供位置感，森林绿只在操作和选择处形成清晰信号。界面以安静、清楚和长文舒适度为先，属于 Operate / Read 的工作环境。\n\n字形沿用系统中文无衬线字体。目录、时间与来源收敛为紧凑的辅助层，正文保留更宽松的字号和行距。结构依靠相邻色面、细边线和稳定对齐成立；持久导航贯穿会话、记忆、接入、设置。",
+    "keyCharacteristics": [
+      "暖白正文、灰绿目录、墨色文字、森林绿操作。",
+      "目录密度与正文舒适度分别处理。",
+      "平面分区、细线与小圆角；浮层才使用阴影。",
+      "桌面并排查阅；手机会话在目录与正文之间切换。"
+    ],
+    "rules": [
+      {
+        "name": "阅读优先",
+        "body": "正文使用独立于紧凑界面标签的字号与行距；新增页面继承阅读正文角色，不从元数据字号推导正文。",
+        "section": "typography"
+      },
+      {
+        "name": "平面优先",
+        "body": "常驻内容依靠色面和边线分区，阴影保留给弹出层、提示与确认对话框。",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do 保留来源、时间、归档范围与证据入口的次级层次，并使用可辨认的灰绿文字。",
+      "Do 让正文沿纸面连续阅读；代码和宽表格在自身区域横向滚动。",
+      "Do 让键盘焦点可见；复合搜索框的焦点环落在整个外框。",
+      "Do 在手机会话正文提供返回列表，并在关闭导航时将其移出交互顺序。",
+      "Do 让归档状态反映来源实际范围，使用文字解释异常与缺失。"
+    ],
+    "donts": [
+      "Don't 用展示型巨标题、指标卡片或装饰性动效改写阅读室的工作气质。",
+      "Don't 将手机会话目录固定堆在正文上方，挤压已选会话的阅读空间。",
+      "Don't 把来源色点当作唯一状态说明。",
+      "Don't 把已有小号时间和标签作为新长文正文的字号依据。"
+    ]
+  }
+}

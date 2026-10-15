@@ -60,7 +60,7 @@
 | 搜索容器键盘焦点不明显 | 增加清晰的 `focus-within` 外框 |
 | 窄屏收起导航仍可能获得键盘焦点 | 关闭时 inert 且隐藏；补上导航展开状态、Escape 关闭与焦点归还 |
 
-界面规范见记忆目录中的 `DESIGN.md`；复核截图在 `output/playwright/review-desktop.png`、`review-mobile.png`、`review-settings.png` 和 `review-focus.png`。
+界面规范见 `design/DESIGN.md`；复核截图在 `output/playwright/review-desktop.png`、`review-mobile.png`、`review-settings.png` 和 `review-focus.png`。
 
 ## 仍需完成的 1.0 门槛
 

@@ -43,6 +43,6 @@
 - 设置 503 模拟响应下，两个保存入口均禁用；恢复正常读取后继续使用。
 - 减少动态效果时，侧栏过渡时长为 0s。
 
-原始验证结果：[ui-details-verification.json](ui-details-verification.json)。截图在记忆目录 `output/playwright/details-*.png`。
+原始验证结果：[ui-details-verification.json](ui-details-verification.json)。截图在 `output/playwright/details-*.png`。
 
 机械检测仅运行一次，报告一处布局过渡警告：工作区的 `margin-left`。这是一项明确限定的例外：桌面侧栏收起需要实际让出阅读宽度，因此只在用户主动收放导航时使用 240ms 的侧栏 width / 工作区 margin-left 过渡。其余控件不采用宽高过渡；移动端只移动抽屉。未以再次扫描清除这项警告，相关本机采样如上。
