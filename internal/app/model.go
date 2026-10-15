@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-const Version = "0.1.0-preview"
+var Version = "0.1.0-preview"
 const Schema = 1
 
 type Config struct {

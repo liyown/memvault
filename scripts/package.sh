@@ -36,7 +36,7 @@ for platform in "${platforms[@]}"; do
   echo "==> Building ${os}/${arch}"
   GOOS="$os" GOARCH="$arch" go build \
     -trimpath \
-    -ldflags "-s -w -X main.version=${VERSION}" \
+    -ldflags "-s -w -X memvault/internal/app.Version=${VERSION}" \
     -o "${BUILD_DIR}/${output_name}" \
     ./cmd/memvault
 
