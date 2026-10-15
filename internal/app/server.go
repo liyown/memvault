@@ -541,10 +541,19 @@ func (s *Server) broadcast(ctx context.Context) {
 		}
 	}
 }
+
+// errAlreadyRunning means another instance holds the service lock.
+var errAlreadyRunning = errors.New("本机服务已经在运行")
+
 func Serve(ctx context.Context, c Config) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	unlock, err := lockInstance(filepath.Join(stateDir(), "service.lock"))
+	if errors.Is(err, errAlreadyRunning) && os.Getenv("MEMVAULT_MANAGED") == "1" {
+		// A login agent racing a running instance must exit cleanly; a failure
+		// exit makes launchd/systemd restart it every few seconds forever.
+		return nil
+	}
 	if err != nil {
 		return err
 	}

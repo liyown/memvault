@@ -21,7 +21,7 @@ func lockInstance(path string) (func(), error) {
 	var overlap windows.Overlapped
 	if err = windows.LockFileEx(windows.Handle(f.Fd()), windows.LOCKFILE_EXCLUSIVE_LOCK|windows.LOCKFILE_FAIL_IMMEDIATELY, 0, 1, 0, &overlap); err != nil {
 		f.Close()
-		return nil, fail("本机服务已经在运行")
+		return nil, errAlreadyRunning
 	}
 	return func() { _ = windows.UnlockFileEx(windows.Handle(f.Fd()), 0, 1, 0, &overlap); f.Close() }, nil
 }
