@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/images/hero.jpg" alt="Memvault — your conversations belong to you. Conversation cards collected in a forest-green archive case." width="100%" />
+
 # Memvault
 
 **Local-first conversation archive and memory layer for AI agents**
