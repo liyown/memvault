@@ -419,7 +419,7 @@ func request(ctx context.Context, c Config, method, path string, value any) ([]b
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	b, err := io.ReadAll(io.LimitReader(resp.Body, 32<<20))
 	if err != nil {
 		return nil, err
@@ -462,7 +462,7 @@ func ensureService(c Config) (Config, error) {
 		if err != nil {
 			return c, err
 		}
-		defer log.Close()
+		defer func() { _ = log.Close() }()
 		cmd := exec.Command(c.Binary, "serve")
 		cmd.Stdout = log
 		cmd.Stderr = log

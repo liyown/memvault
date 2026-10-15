@@ -22,7 +22,7 @@ func testEngine(t *testing.T) *Engine {
 	must(t, Initialize(root))
 	e, err := OpenEngine(Config{Root: root, Device: "test-device", Token: "test-token", ContextBudget: 16000})
 	must(t, err)
-	t.Cleanup(func() { e.Close() })
+	t.Cleanup(func() { _ = e.Close() })
 	return e
 }
 func must(t *testing.T, err error) {
@@ -99,7 +99,7 @@ func TestPartialTailAndMessageEdit(t *testing.T) {
 	must(t, err)
 	_, err = f.WriteString(`{"type":"assistant","sessionId":"partial","uuid":"reply","message":{"role":"assistant","content":"`)
 	must(t, err)
-	f.Close()
+	must(t, f.Close())
 	must(t, e.CaptureFile("claude", p, true))
 	s, err := e.Session(key("claude", "partial"), 0, 100)
 	must(t, err)
@@ -110,7 +110,7 @@ func TestPartialTailAndMessageEdit(t *testing.T) {
 	must(t, err)
 	_, err = f.WriteString("complete\"}}\n")
 	must(t, err)
-	f.Close()
+	must(t, f.Close())
 	must(t, e.CaptureFile("claude", p, false))
 	s, err = e.Session(s.ID, 0, 100)
 	must(t, err)
@@ -190,7 +190,7 @@ func TestExportImportForgetAndOldReplica(t *testing.T) {
 	c.Device = "device-b"
 	other, err := OpenEngine(c)
 	must(t, err)
-	defer other.Close()
+	defer func() { _ = other.Close() }()
 	must(t, other.Import(export))
 	s, err := other.Session(id, 0, 100)
 	must(t, err)
@@ -226,7 +226,7 @@ func TestOpenCodeSnapshotAndAttachments(t *testing.T) {
 	must(t, err)
 	_, err = db.Exec(`CREATE TABLE session(id TEXT,title TEXT,time_created INTEGER,time_updated INTEGER,parent_id TEXT);CREATE TABLE message(id TEXT,session_id TEXT,time_created INTEGER,time_updated INTEGER,data TEXT);CREATE TABLE part(id TEXT,message_id TEXT,session_id TEXT,time_created INTEGER,time_updated INTEGER,data TEXT);INSERT INTO session VALUES('s','来源会话',1000,2000,NULL);INSERT INTO message VALUES('m','s',1000,2000,'{"role":"user"}');INSERT INTO part VALUES('p','m','s',1000,2000,'{"type":"text","text":"portable SQLite 对话"}');INSERT INTO part VALUES('image','m','s',1000,2000,'{"type":"file","filename":"pixel.png","url":"data:image/png;base64,aGVsbG8="}');`)
 	must(t, err)
-	db.Close()
+	must(t, db.Close())
 	n, err := e.CaptureOpenCode(p)
 	must(t, err)
 	if n != 1 {
@@ -364,7 +364,7 @@ func TestDurableJournalRecoversBeforeIndexCommit(t *testing.T) {
 	// This is the on-disk state after a process dies between journal fsync and SQLite commit.
 	recovered, err := OpenEngine(e.Config)
 	must(t, err)
-	defer recovered.Close()
+	defer func() { _ = recovered.Close() }()
 	got, err := recovered.Session(s.ID, 0, 10)
 	must(t, err)
 	if len(got.Messages) != 1 || got.Messages[0].Text != m.Text {
@@ -438,7 +438,7 @@ func TestRestartWhileRootUnavailable(t *testing.T) {
 	must(t, os.Rename(e.Config.Root, away))
 	restarted, err := OpenEngine(e.Config)
 	must(t, err)
-	defer restarted.Close()
+	defer func() { _ = restarted.Close() }()
 	if restarted.ProtectedScan(context.Background()) == nil {
 		t.Fatal("missing storage reported healthy")
 	}
@@ -500,7 +500,7 @@ func TestCorruptIndexRecreatedFromArchive(t *testing.T) {
 	must(t, os.WriteFile(index, []byte("not a sqlite database"), 0600))
 	recovered, err := OpenEngine(e.Config)
 	must(t, err)
-	defer recovered.Close()
+	defer func() { _ = recovered.Close() }()
 	s, err := recovered.Session(key("codex", "index-recovery"), 0, 10)
 	must(t, err)
 	if len(s.Messages) != 1 {

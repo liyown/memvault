@@ -337,13 +337,13 @@ func (e *Engine) CaptureFile(agent, path string, force bool) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 	snapshot, err := os.CreateTemp(stateDir(), "source-snapshot-*")
 	if err != nil {
 		return err
 	}
-	defer snapshot.Close()
-	defer os.Remove(snapshot.Name())
+	defer func() { _ = snapshot.Close() }()
+	defer func() { _ = os.Remove(snapshot.Name()) }()
 	raw, err := e.ArchiveRaw(io.TeeReader(io.LimitReader(f, info.Size()), snapshot), "native-"+agent)
 	if err != nil {
 		return err
@@ -401,7 +401,7 @@ func queryObjects(tx *sql.Tx, query string, args ...any) ([]object, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	cols, err := rows.Columns()
 	if err != nil {
 		return nil, err
@@ -441,7 +441,7 @@ func (e *Engine) CaptureOpenCode(path string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 	db.SetMaxOpenConns(1)
 	ctx, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
@@ -449,7 +449,7 @@ func (e *Engine) CaptureOpenCode(path string) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	sessions, err := queryObjects(tx, "SELECT * FROM session ORDER BY time_updated DESC")
 	if err != nil {
 		return 0, fmt.Errorf("OpenCode 来源格式暂不支持：%w", err)
@@ -644,7 +644,7 @@ func (e *Engine) Scan(ctx context.Context) error {
 func (e *Engine) Background(ctx context.Context) {
 	watcher, err := fsnotify.NewWatcher()
 	if err == nil {
-		defer watcher.Close()
+		defer func() { _ = watcher.Close() }()
 		for _, s := range e.configSnapshot().Sources {
 			if s.Enabled {
 				p := s.Path

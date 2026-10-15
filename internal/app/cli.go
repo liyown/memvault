@@ -181,7 +181,7 @@ func Run(args []string) error {
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != 200 {
 			return fail("导出失败：%s", resp.Status)
 		}
@@ -190,9 +190,11 @@ func Run(args []string) error {
 			return err
 		}
 		name := file.Name()
-		defer os.Remove(name)
+		defer func() { _ = os.Remove(name) }()
 		_, err = io.Copy(file, resp.Body)
-		file.Close()
+		if closeErr := file.Close(); err == nil {
+			err = closeErr
+		}
 		if err != nil {
 			return err
 		}
@@ -209,14 +211,14 @@ func Run(args []string) error {
 		if err != nil {
 			return err
 		}
-		defer file.Close()
+		defer func() { _ = file.Close() }()
 		req, _ := http.NewRequestWithContext(ctx, "POST", "http://"+c.Address+"/api/v1/import", file)
 		req.Header.Set("Authorization", "Bearer "+c.Token)
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		b, _ := io.ReadAll(resp.Body)
 		if resp.StatusCode != 200 {
 			return fail("导入失败：%s", b)
@@ -386,7 +388,7 @@ func migrateRoot(old, next Config) error {
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 		if resp.StatusCode != 200 {
 			return fail("旧记忆库未能完成导出；未切换")
 		}
@@ -394,12 +396,14 @@ func migrateRoot(old, next Config) error {
 		if err != nil {
 			return err
 		}
-		defer os.Remove(f.Name())
+		defer func() { _ = os.Remove(f.Name()) }()
 		_, err = io.Copy(f, resp.Body)
 		if err == nil {
 			err = f.Sync()
 		}
-		f.Close()
+		if closeErr := f.Close(); err == nil {
+			err = closeErr
+		}
 		if err != nil {
 			return err
 		}
@@ -414,7 +418,9 @@ func migrateRoot(old, next Config) error {
 				err = fail("迁移校验失败：%s", strings.Join(issues, "；"))
 			}
 		}
-		target.Close()
+		if closeErr := target.Close(); err == nil {
+			err = closeErr
+		}
 		if err != nil {
 			return err
 		}
@@ -441,7 +447,7 @@ func launchSetup(c Config, root string) error {
 	if err != nil {
 		return err
 	}
-	defer log.Close()
+	defer func() { _ = log.Close() }()
 	cmd := exec.Command(c.Binary, "setup", "--root", root, "--yes")
 	cmd.Stdout = log
 	cmd.Stderr = log

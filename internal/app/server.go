@@ -106,7 +106,7 @@ func requireMethod(w http.ResponseWriter, r *http.Request, methods ...string) bo
 		}
 	}
 	w.Header().Set("Allow", strings.Join(methods, ", "))
-	http.Error(w, "不支持此请求方式", 405)
+	http.Error(w, "不支持此请求方式", http.StatusMethodNotAllowed)
 	return false
 }
 func (s *Server) api(w http.ResponseWriter, r *http.Request) {
@@ -332,10 +332,14 @@ func (s *Server) api(w http.ResponseWriter, r *http.Request) {
 			case <-r.Context().Done():
 				return
 			case <-ch:
-				fmt.Fprint(w, "event: change\ndata: {}\n\n")
+				if _, err := fmt.Fprint(w, "event: change\ndata: {}\n\n"); err != nil {
+					return
+				}
 				flusher.Flush()
 			case <-tick.C:
-				fmt.Fprint(w, ": heartbeat\n\n")
+				if _, err := fmt.Fprint(w, ": heartbeat\n\n"); err != nil {
+					return
+				}
 				flusher.Flush()
 			}
 		}
@@ -349,9 +353,11 @@ func (s *Server) api(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		name := file.Name()
-		defer os.Remove(name)
+		defer func() { _ = os.Remove(name) }()
 		err = e.Export(file)
-		file.Close()
+		if closeErr := file.Close(); err == nil {
+			err = closeErr
+		}
 		if err != nil {
 			response(w, nil, err)
 			return
@@ -369,9 +375,11 @@ func (s *Server) api(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		name := file.Name()
-		defer os.Remove(name)
+		defer func() { _ = os.Remove(name) }()
 		_, err = io.Copy(file, http.MaxBytesReader(w, r.Body, 32<<30))
-		file.Close()
+		if closeErr := file.Close(); err == nil {
+			err = closeErr
+		}
 		if err == nil {
 			err = e.Import(name)
 		}
@@ -492,7 +500,7 @@ func (s *Server) api(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Disposition", "attachment; filename="+strconv.Quote(first(q.Get("name"), id)))
 		w.Header().Set("Content-Type", "application/octet-stream")
-		w.Write(b)
+		_, _ = w.Write(b)
 	default:
 		http.NotFound(w, r)
 	}
@@ -569,7 +577,7 @@ func Serve(ctx context.Context, c Config) error {
 	if err != nil {
 		return err
 	}
-	defer e.Close()
+	defer func() { _ = e.Close() }()
 	address := c.Address
 	if address == "" {
 		address = "127.0.0.1:27941"
@@ -588,7 +596,7 @@ func Serve(ctx context.Context, c Config) error {
 	if err != nil {
 		return err
 	}
-	defer ln.Close()
+	defer func() { _ = ln.Close() }()
 	address = ln.Addr().String()
 	c.Address = address
 	e.Config.Address = address

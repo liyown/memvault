@@ -9,7 +9,7 @@ Your conversations belong to you. Store them locally, search across platforms, a
 [Installation](#installation) • [Quick Start](#quick-start) • [Documentation](docs/) • [Architecture](docs/ARCHITECTURE.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Go Version](https://img.shields.io/badge/Go-1.23+-00ADD8?logo=go)](go.mod)
+[![Go Version](https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go)](go.mod)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
 </div>
@@ -100,7 +100,7 @@ sudo mv memvault /usr/local/bin/
 
 ### Build from Source
 
-Requires Go 1.23+, Node.js 20.19+/22.12+, npm:
+Requires Go 1.26+, Node.js 20.19+/22.12+, npm:
 
 ```sh
 git clone https://github.com/memvault-org/memvault.git

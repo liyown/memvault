@@ -48,9 +48,9 @@ func TestMillionMessageSearch(t *testing.T) {
 				must(t, err)
 			}
 		}
-		ss.Close()
-		ms.Close()
-		fs.Close()
+		must(t, ss.Close())
+		must(t, ms.Close())
+		must(t, fs.Close())
 		must(t, tx.Commit())
 		if batch%2000 == 0 {
 			t.Logf("indexed %d messages", (batch+100)*perSession)
@@ -114,8 +114,8 @@ func TestMillionMessageSearch(t *testing.T) {
 		ln, err := net.Listen("tcp", "127.0.0.1:0")
 		must(t, err)
 		server := &http.Server{Handler: NewServer(e, ln.Addr().String()).Handler()}
-		go server.Serve(ln)
-		defer server.Close()
+		go func() { _ = server.Serve(ln) }()
+		defer func() { _ = server.Close() }()
 		must(t, atomicWrite(receipt+".connection", encoded(object{"url": "http://" + ln.Addr().String(), "token": e.Config.Token}), 0600))
 		deadline := time.Now().Add(60 * time.Second)
 		verified := false

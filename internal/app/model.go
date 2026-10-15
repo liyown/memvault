@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -16,6 +15,7 @@ import (
 )
 
 var Version = "0.1.0-preview"
+
 const Schema = 1
 
 type Config struct {
@@ -215,7 +215,7 @@ func atomicWrite(path string, b []byte, mode os.FileMode) error {
 		return e
 	}
 	tmp := f.Name()
-	defer os.Remove(tmp)
+	defer func() { _ = os.Remove(tmp) }()
 	if e = f.Chmod(mode); e == nil {
 		_, e = f.Write(b)
 	}
@@ -236,25 +236,13 @@ func atomicWrite(path string, b []byte, mode os.FileMode) error {
 	if runtime.GOOS != "windows" {
 		if d, e := os.Open(filepath.Dir(path)); e == nil {
 			e = d.Sync()
-			d.Close()
+			_ = d.Close()
 			if e != nil {
 				return e
 			}
 		}
 	}
 	return nil
-}
-func copyFile(src, dst string) error {
-	f, e := os.Open(src)
-	if e != nil {
-		return e
-	}
-	defer f.Close()
-	b, e := io.ReadAll(f)
-	if e != nil {
-		return e
-	}
-	return atomicWrite(dst, b, 0600)
 }
 func readJSON(path string, v any) error {
 	b, e := os.ReadFile(path)

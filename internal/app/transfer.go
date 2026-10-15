@@ -12,7 +12,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
-	"sort"
 	"strings"
 )
 
@@ -38,7 +37,7 @@ func (e *Engine) Export(w io.Writer) error {
 		}
 	}
 	z := zip.NewWriter(w)
-	defer z.Close()
+	defer func() { _ = z.Close() }()
 	manifest := ExportManifest{Schema: Schema, Created: utc(), Files: map[string]string{}}
 	write := func(name string, b []byte) error {
 		manifest.Files[name] = hash(b)
@@ -102,7 +101,7 @@ func (e *Engine) Import(path string) error {
 	if err != nil {
 		return err
 	}
-	defer z.Close()
+	defer func() { _ = z.Close() }()
 	var manifest ExportManifest
 	found := false
 	files := map[string]*zip.File{}
@@ -122,7 +121,7 @@ func (e *Engine) Import(path string) error {
 				return err
 			}
 			b, err := io.ReadAll(io.LimitReader(r, 16<<20))
-			r.Close()
+			_ = r.Close()
 			if err != nil {
 				return err
 			}
@@ -139,7 +138,7 @@ func (e *Engine) Import(path string) error {
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(stage)
+	defer func() { _ = os.RemoveAll(stage) }()
 	var total uint64
 	for name, want := range manifest.Files {
 		f := files[name]
@@ -150,7 +149,7 @@ func (e *Engine) Import(path string) error {
 		if total > 32<<30 {
 			return fail("单次导入超过 32 GiB，请分包导入")
 		}
-		if !(name == "memvault.json" || name == "README.md" || name == "FORMAT.md" || name == "AGENTS.md" || strings.HasPrefix(name, "objects/") || strings.HasPrefix(name, "journal/") || strings.HasPrefix(name, "memories/") || strings.HasPrefix(name, "readable/")) {
+		if name != "memvault.json" && name != "README.md" && name != "FORMAT.md" && name != "AGENTS.md" && !strings.HasPrefix(name, "objects/") && !strings.HasPrefix(name, "journal/") && !strings.HasPrefix(name, "memories/") && !strings.HasPrefix(name, "readable/") {
 			return fail("不支持的导入内容：%s", name)
 		}
 		r, err := f.Open()
@@ -158,7 +157,7 @@ func (e *Engine) Import(path string) error {
 			return err
 		}
 		b, err := io.ReadAll(io.LimitReader(r, int64(f.UncompressedSize64)+1))
-		r.Close()
+		_ = r.Close()
 		if err != nil {
 			return err
 		}
@@ -365,7 +364,7 @@ func (e *Engine) scrubForgotten() error {
 		_ = markerRows.Scan(&kind, &id)
 		candidates[id] = candidates[id] || kind == "raw-object"
 	}
-	markerRows.Close()
+	_ = markerRows.Close()
 	var retained []Event
 	var oldPaths []string
 	err = filepath.WalkDir(filepath.Join(e.Config.Root, "journal"), func(p string, d fs.DirEntry, err error) error {
@@ -487,8 +486,7 @@ func (e *Engine) scrubForgotten() error {
 	}
 	// Derive all live object references from every surviving historical version.
 	used := map[string]bool{}
-	var add func(string, bool) error
-	add = func(id string, isRaw bool) error {
+	add := func(id string, isRaw bool) error {
 		if id == "" || used[id] {
 			return nil
 		}
@@ -754,7 +752,7 @@ func (e *Engine) ProtectedScan(ctx context.Context) error {
 		if er != nil {
 			return er
 		}
-		defer offline.Close()
+		defer func() { _ = offline.Close() }()
 		if er = offline.Scan(ctx); er != nil {
 			return er
 		}
@@ -771,13 +769,4 @@ func (e *Engine) ProtectedScan(ctx context.Context) error {
 	}
 	return e.Scan(ctx)
 }
-func sortedKeys(m map[string]string) []string {
-	a := make([]string, 0, len(m))
-	for k := range m {
-		a = append(a, k)
-	}
-	sort.Strings(a)
-	return a
-}
-
 func hasCandidate(candidates map[string]bool, id string) bool { _, ok := candidates[id]; return ok }

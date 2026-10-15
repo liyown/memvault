@@ -2,7 +2,6 @@ package app
 
 import (
 	"bufio"
-	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
@@ -107,7 +106,7 @@ func OpenEngine(c Config) (*Engine, error) {
 	db.SetMaxOpenConns(1)
 	engine := &Engine{Config: c, DB: db, Statuses: map[string]SourceStatus{}, changed: make(chan struct{}, 1)}
 	if _, e = db.Exec(schemaSQL); e != nil {
-		db.Close()
+		_ = db.Close()
 		var coded interface{ Code() int }
 		if !errors.As(e, &coded) || (coded.Code()&255 != 11 && coded.Code()&255 != 26) {
 			return nil, e
@@ -126,7 +125,7 @@ func OpenEngine(c Config) (*Engine, error) {
 		db.SetMaxOpenConns(1)
 		engine.DB = db
 		if _, e = db.Exec(schemaSQL); e != nil {
-			db.Close()
+			_ = db.Close()
 			return nil, e
 		}
 	}
@@ -136,7 +135,7 @@ func OpenEngine(c Config) (*Engine, error) {
 	if available && indexed > 0 && refs == 0 {
 		_, e = db.Exec(`DELETE FROM segments;DELETE FROM applied;DELETE FROM sessions;DELETE FROM messages;DELETE FROM memories;DELETE FROM parents;DELETE FROM relations;DELETE FROM search;DELETE FROM cursors;`)
 		if e != nil {
-			db.Close()
+			_ = db.Close()
 			return nil, e
 		}
 	}
@@ -144,7 +143,7 @@ func OpenEngine(c Config) (*Engine, error) {
 		e = engine.Replay()
 	}
 	if e != nil {
-		db.Close()
+		_ = db.Close()
 		return nil, e
 	}
 	return engine, nil
@@ -246,7 +245,7 @@ func (e *Engine) applyBatch(events []Event, segment string) error {
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() { _ = tx.Rollback() }()
 	for _, ev := range events {
 		if ev.Schema != Schema {
 			return fail("不支持的记录版本：%d", ev.Schema)
@@ -356,7 +355,7 @@ func (e *Engine) apply(tx *sql.Tx, ev Event) error {
 			_ = json.Unmarshal(b, &x)
 			heads = append(heads, x)
 		}
-		rows.Close()
+		_ = rows.Close()
 		for _, x := range heads {
 			if err = searchInsert(tx, "memory:"+x.ID+":"+x.Revision, x.Updated, []any{terms(x.Title + " " + x.Body), x.Body, x.Session, x.ID, "", x.Title, "", "memory", x.Updated}); err != nil {
 				return err
@@ -385,7 +384,8 @@ func (e *Engine) apply(tx *sql.Tx, ev Event) error {
 		if t.Kind == "object" || t.Kind == "raw-object" {
 			return nil
 		}
-		if t.Kind == "session" {
+		switch t.Kind {
+		case "session":
 			_, err = tx.Exec("DELETE FROM messages WHERE session=?", t.ID)
 			if err != nil {
 				return err
@@ -404,7 +404,7 @@ func (e *Engine) apply(tx *sql.Tx, ev Event) error {
 			}
 			_, err = tx.Exec("DELETE FROM relations WHERE origin=? OR target=?", t.ID, t.ID)
 			return err
-		} else if t.Kind == "memory" {
+		case "memory":
 			err = searchDelete(tx, "memory", t.ID)
 			if err != nil {
 				return err
@@ -547,14 +547,14 @@ func (e *Engine) Sessions(agent string, offset, limit int) ([]Session, int, erro
 	for rows.Next() {
 		var b []byte
 		if err = rows.Scan(&b); err != nil {
-			rows.Close()
+			_ = rows.Close()
 			return nil, 0, err
 		}
 		var s Session
 		_ = json.Unmarshal(b, &s)
 		list = append(list, s)
 	}
-	rows.Close()
+	_ = rows.Close()
 	for i := range list {
 		_ = e.DB.QueryRow("SELECT count(*) FROM messages WHERE session=?", list[i].ID).Scan(&list[i].Count)
 	}
@@ -572,7 +572,7 @@ func (e *Engine) Session(id string, offset, limit int) (Session, error) {
 	if err != nil {
 		return s, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	for rows.Next() {
 		var m Message
 		var version string
@@ -600,7 +600,7 @@ func (e *Engine) Memories(id string, history bool) ([]Memory, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	var result []Memory
 	for rows.Next() {
 		var b []byte
@@ -665,7 +665,7 @@ func (e *Engine) Search(q SearchQuery) ([]Hit, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	var list []Hit
 	for rows.Next() {
 		var h Hit
@@ -701,7 +701,7 @@ func (e *Engine) Relations(id string) ([]Relation, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 	var out []Relation
 	for rows.Next() {
 		var r Relation
@@ -913,7 +913,7 @@ func (e *Engine) Context(sid, query string) (map[string]any, error) {
 			budget -= len([]rune(m.Text))
 			pending = append(pending, map[string]any{"version": version, "message": m, "truncated": truncated})
 		}
-		rows.Close()
+		_ = rows.Close()
 		for i, j := 0, len(pending)-1; i < j; i, j = i+1, j-1 {
 			pending[i], pending[j] = pending[j], pending[i]
 		}
@@ -952,7 +952,7 @@ func (e *Engine) Tasks() ([]Task, error) {
 		t.Kind = "summarize"
 		tasks = append(tasks, t)
 	}
-	rows.Close()
+	_ = rows.Close()
 	memories, _ := e.Memories("", false)
 	covered := map[string]map[string]bool{}
 	headCount := map[string]int{}
@@ -985,7 +985,7 @@ func (e *Engine) Tasks() ([]Task, error) {
 					t.Pending++
 				}
 			}
-			r.Close()
+			_ = r.Close()
 		}
 		if t.Pending > 0 || t.Kind == "merge" {
 			_ = e.DB.QueryRow("SELECT owner,until_time FROM leases WHERE id=? AND until_time>?", t.ID, utc()).Scan(&t.Owner, &t.LeaseUntil)
@@ -1074,10 +1074,6 @@ func vaultUnavailableIssue(err error) string {
 	}
 	return "记忆目录暂不可用；" + pending
 }
-func withTimeout(ctx context.Context, d time.Duration) (context.Context, context.CancelFunc) {
-	return context.WithTimeout(ctx, d)
-}
-
 func (e *Engine) configSnapshot() Config {
 	e.configMu.RLock()
 	defer e.configMu.RUnlock()
