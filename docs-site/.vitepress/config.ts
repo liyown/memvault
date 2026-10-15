@@ -4,6 +4,7 @@ export default defineConfig({
   title: 'Memvault',
   description: 'Local-first conversation archive and memory layer for AI agents',
   base: '/memvault/',
+  ignoreDeadLinks: true,
 
   head: [
     ['link', { rel: 'icon', href: '/memvault/logo.svg' }],
@@ -11,9 +12,9 @@ export default defineConfig({
     ['meta', { name: 'og:type', content: 'website' }],
     ['meta', { name: 'og:locale', content: 'en' }],
     ['meta', { name: 'og:site_name', content: 'Memvault' }],
-    ['meta', { name: 'og:image', content: 'https://memvault-org.github.io/memvault/hero-illustration.svg' }],
+    ['meta', { name: 'og:image', content: 'https://liyown.github.io/memvault/hero-illustration.svg' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
-    ['meta', { name: 'twitter:image', content: 'https://memvault-org.github.io/memvault/hero-illustration.svg' }],
+    ['meta', { name: 'twitter:image', content: 'https://liyown.github.io/memvault/hero-illustration.svg' }],
   ],
 
   themeConfig: {
@@ -22,7 +23,7 @@ export default defineConfig({
     nav: [
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'Concepts', link: '/concepts/conversation-vs-memory' },
-      { text: 'GitHub', link: 'https://github.com/memvault-org/memvault' }
+      { text: 'GitHub', link: 'https://github.com/liyown/memvault' }
     ],
 
     sidebar: [
@@ -65,7 +66,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/memvault-org/memvault' }
+      { icon: 'github', link: 'https://github.com/liyown/memvault' }
     ],
 
     footer: {
