@@ -1,367 +1,396 @@
 # Storage Design
 
-Memvault's storage is **content-addressed**, **append-only**, and **human-readable**. Every file can be opened in a text editor, and nothing is ever deleted — only new versions are added.
-
-## Architecture Overview
-
-```mermaid
-graph TD
-    A[Agent Request] --> B{MCP Server}
-    B --> C[JSONL Journal]
-    B --> D[SQLite Index]
-    B --> E[Markdown Memories]
-    B --> F[Objects Store]
-    
-    C --> G[Event Log]
-    D --> H[Full-Text Search]
-    E --> I[Human-Editable]
-    F --> J[Content-Addressed]
-    
-    G --> K[Local Disk]
-    H --> K
-    I --> K
-    J --> K
-    
-    style K fill:#3b6dff,color:#fff
-    style B fill:#6ee7b7
-```
-
----
+Understanding Memvault's file structure and database design.
 
 ## Directory Structure
 
 ```
-~/memvault/
-├── events/
-│   ├── codex/
-│   │   └── 2026-01-15.jsonl         # Daily event log
-│   ├── claude/
-│   │   └── 2026-01-15.jsonl
-│   └── opencode/
-│       └── 2026-01-15.jsonl
-├── objects/
-│   ├── ab/
-│   │   └── cdef1234567890...        # Content-addressed snapshots
-│   └── 12/
-│       └── 3456789abcdef...
-├── memory/
-│   ├── preference-go-backend.md     # Human-editable memories
-│   ├── background-user-role.md
-│   └── summary-readme-discussion.md
-├── index.db                          # SQLite FTS5 index
-└── config.yaml                       # Vault configuration
+~/memvault/                    # Vault root (MEMVAULT_HOME)
+├── sessions/                  # Conversation archives
+│   ├── abc123.../            # Session ID (first 32 chars)
+│   │   ├── messages/         # Message files
+│   │   │   ├── 0001.json    # User/assistant messages
+│   │   │   └── 0002.json
+│   │   ├── meta.json        # Session metadata
+│   │   └── summary.md       # Human-readable summary
+│   └── def456.../
+├── memories/                  # Agent memories
+│   ├── background/           # Who you are
+│   │   └── identity.md
+│   ├── preference/           # How you work
+│   │   └── code-style.md
+│   ├── knowledge/            # Facts learned
+│   │   └── project-arch.md
+│   └── summary/              # Session summaries
+│       └── 2026-10-15.md
+└── .memvault/                # Internal data
+    ├── db/                   # SQLite databases
+    │   ├── sessions.db      # Session index
+    │   ├── memories.db      # Memory index
+    │   └── fts.db           # Full-text search
+    ├── config.yaml          # Configuration
+    └── logs/                # Application logs
 ```
 
----
+## Session Storage
 
-## 1. Event Journal (JSONL)
+### Message Files
 
-Every action is appended to a daily JSONL file.
-
-### Format
-
-```jsonl
-{"v":"msg_abc123","ts":"2026-01-15T10:30:00Z","role":"user","text":"Help me write a README","agent":"claude","native":"uuid-123"}
-{"v":"msg_def456","ts":"2026-01-15T10:30:15Z","role":"assistant","text":"I'd be happy to help...","agent":"claude","native":"uuid-123"}
-```
-
-**Fields**:
-
-- `v`: Message version (unique ID)
-- `ts`: ISO-8601 timestamp
-- `role`: `user` or `assistant`
-- `text`: Message content
-- `agent`: Platform (codex, claude, opencode)
-- `native`: Native session ID from platform
-
-### Why JSONL?
-
-- **Append-only**: No file rewrites (safe for concurrent access)
-- **Human-readable**: Open in any text editor
-- **Streamable**: Process line-by-line without loading entire file
-- **Git-friendly**: Line-based diffs
-
----
-
-## 2. Content-Addressed Objects
-
-Large messages (>1KB) or attachments are stored as **objects** with SHA-256 hashes.
-
-### Object Path
-
-```
-objects/
-└── ab/
-    └── cdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890
-```
-
-**Naming**:
-
-- First 2 chars: Subdirectory (`ab/`)
-- Remaining 62 chars: File name
-
-**Deduplication**: Identical content → same hash → stored once.
-
-### Example
+Each message is one JSON file:
 
 ```json
+// sessions/abc123/messages/0001.json
 {
-  "v": "msg_abc123",
-  "ts": "2026-01-15T10:30:00Z",
-  "role": "assistant",
-  "snapshot": "abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
-  "agent": "claude",
-  "native": "uuid-123"
+  "version": "1.0",
+  "role": "user",
+  "content": "Help me implement folder picker",
+  "timestamp": "2026-10-15T08:00:00Z",
+  "meta": {
+    "model": "claude-opus-5-5",
+    "attachments": []
+  }
 }
 ```
 
-**Retrieval**:
+### Session Metadata
 
-```sh
-cat objects/ab/cdef1234567890...
-# Full message text
+```json
+// sessions/abc123/meta.json
+{
+  "id": "abc123...",
+  "agent": "claude",
+  "native_id": "4b67a8e4-b697-4ede-...",
+  "title": "Folder Picker Implementation",
+  "created": "2026-10-15T08:00:00Z",
+  "updated": "2026-10-15T10:00:00Z",
+  "message_count": 42
+}
 ```
 
----
+### Why Individual Message Files?
 
-## 3. Memories (Markdown)
+- ✅ Append-only (no rewriting large files)
+- ✅ Concurrent writes safe
+- ✅ Easy to stream
+- ✅ Version control friendly
 
-Long-term facts are stored as Markdown files with frontmatter.
+## Memory Storage
 
-### Format
+### Markdown Format
 
 ```markdown
-<!-- memvault version: e0d21532ae1bed94278c6f29cf7e5764fd8f73d5... -->
----
-id: 77a883b8ef481b5919f0335203caa528ee7e554bed0facba
-title: User prefers Go for backend
-kind: preference
-author: claude
-updated: 2026-01-15T10:30:00Z
-evidence:
-  - session: xyz789
-    message: msg_abc123
----
+<!-- memories/preference/code-style.md -->
+<!-- version: 5e8f3a2... -->
+<!-- parents: 2a1b9c8..., 7d4e1f0... -->
+# Code Review Preference
 
-User explicitly stated preference for Go in backend development.
+User wants security-focused code reviews with emphasis on:
+- Input validation
+- SQL injection prevention
+- XSS protection
 
-**Why**: Performance, strong typing, simple deployment.
+**Why**: Working on security-sensitive project.
 
-**How to apply**: Default to Go for any backend service recommendations.
+**Evidence**:
+- Session abc123, message 5
+- Session def456, message 12
 ```
 
-**Versioning**:
+### Frontmatter
 
-- First line: `<!-- memvault version: <hash> -->`
-- Hash changes on every update
-- Program compares hashes to detect edits
-
-### Memory Types
-
-| Kind | Purpose | Example |
-|------|---------|---------|
-| `preference` | User choices | "Prefers Go for backend" |
-| `background` | Who the user is | "Works as a Go developer at Acme Corp" |
-| `knowledge` | Domain facts | "Project uses SQLite FTS5 for search" |
-| `summary` | Conversation recap | "Discussed README structure" |
-
+```yaml
 ---
+id: 5e8f3a2b...
+kind: preference
+title: Code Review Preference
+updated: 2026-10-15T10:00:00Z
+author: claude
+---
+```
 
-## 4. SQLite Index
+## Database Layer
 
-Full-text search and metadata queries use SQLite with FTS5 extension.
+### SQLite Databases
 
-### Schema
+#### sessions.db
 
 ```sql
-CREATE VIRTUAL TABLE messages USING fts5(
-  version,
-  text,
-  role,
-  agent,
-  session,
-  ts
-);
-
-CREATE TABLE memories (
-  id TEXT PRIMARY KEY,
-  title TEXT,
-  kind TEXT,
-  body TEXT,
-  revision TEXT,
-  updated TEXT
-);
-
 CREATE TABLE sessions (
   id TEXT PRIMARY KEY,
-  native TEXT,
-  agent TEXT,
+  agent TEXT NOT NULL,
+  native_id TEXT NOT NULL,
   title TEXT,
-  updated TEXT
+  created TIMESTAMP,
+  updated TIMESTAMP,
+  message_count INTEGER,
+  raw_path TEXT -- Path to message files
+);
+
+CREATE INDEX idx_sessions_agent ON sessions(agent);
+CREATE INDEX idx_sessions_created ON sessions(created);
+```
+
+#### memories.db
+
+```sql
+CREATE TABLE memories (
+  id TEXT PRIMARY KEY,
+  kind TEXT NOT NULL,  -- background, preference, knowledge, summary
+  title TEXT NOT NULL,
+  body TEXT,
+  revision TEXT,       -- Content hash for conflict detection
+  updated TIMESTAMP,
+  author TEXT
+);
+
+CREATE INDEX idx_memories_kind ON memories(kind);
+CREATE INDEX idx_memories_updated ON memories(updated);
+```
+
+#### fts.db (Full-Text Search)
+
+```sql
+-- FTS5 virtual table
+CREATE VIRTUAL TABLE messages_fts USING fts5(
+  session_id,
+  message_file,
+  role,
+  content,
+  timestamp,
+  tokenize='porter unicode61'
+);
+
+CREATE VIRTUAL TABLE memories_fts USING fts5(
+  memory_id,
+  kind,
+  title,
+  body,
+  tokenize='porter unicode61'
 );
 ```
 
-### Indexing
+### Why SQLite?
 
-```sh
-# Initial index (from scratch)
-memvault repair --action rebuild
-# → Scans all events/*.jsonl, builds index
+- ✅ Zero configuration
+- ✅ Single file database
+- ✅ FTS5 for fast search
+- ✅ ACID transactions
+- ✅ Embeddable
+- ✅ Cross-platform
 
-# Incremental update
-# Happens automatically when new events arrive
+## Indexing Strategy
+
+### Write Path
+
+```
+New Message
+    ↓
+Write JSON file (atomic)
+    ↓
+Update sessions.db (metadata)
+    ↓
+Insert into FTS index (async)
 ```
 
-**Performance**:
+### Read Path (Search)
 
-- 1M messages indexed in 45s (M1 MacBook Pro)
-- Search <100ms
+```
+Search Query
+    ↓
+FTS query (fast)
+    ↓
+Load message files (lazy)
+    ↓
+Return results
+```
 
----
+### Rebuild Index
 
-## 5. Conflict Resolution
+```bash
+memvault index rebuild
+```
 
-Multiple agents can update memories concurrently. Memvault uses **version vectors** to detect conflicts.
+Scans all files and rebuilds FTS indices.
 
-### Example
+## File Format Versioning
+
+### Message Format Version
+
+```json
+{
+  "version": "1.0",  // Format version
+  "role": "user",
+  ...
+}
+```
+
+Future versions can add fields without breaking readers:
+- v1.0: Basic message
+- v1.1: Add attachments
+- v2.0: Breaking change (new required field)
+
+### Memory Format Version
 
 ```markdown
-<!-- memvault version: abc123 -->
+<!-- version: 5e8f3a2... -->
 ```
 
-**Update flow**:
+Content-addressed versioning:
+- Hash of content
+- Detects conflicts
+- Enables CRDT-like merge
 
-1. Agent reads memory (gets version `abc123`)
-2. Agent modifies content
-3. Agent writes with `parents: ["abc123"]`
-4. If version still `abc123` → Success
-5. If version changed → Conflict (another agent wrote first)
+## Sync Considerations
 
-**Resolution**:
+### File-Based Sync
 
-- Re-read memory (gets new version `def456`)
-- Merge changes
-- Retry with `parents: ["def456"]`
+Works with:
+- iCloud
+- Dropbox
+- Syncthing
+- rsync
+- Git
 
----
+### Conflict Detection
 
-## Export Format
-
-```sh
-memvault export --out archive.zip
+```markdown
+<!-- memories/preference/lang.md -->
+<<<<<<< HEAD
+User prefers Go
+=======
+User prefers Rust
+>>>>>>> Remote
 ```
 
-**Contents**:
+Memvault detects conflict markers and flags for review.
 
-```
-archive.zip
-├── events/
-│   ├── codex/2026-01-15.jsonl
-│   └── claude/2026-01-15.jsonl
-├── objects/
-│   └── ab/cdef1234...
-├── memory/
-│   └── preference-go-backend.md
-└── checksums.txt                # SHA-256 hashes
-```
+### Partial Sync
 
-**Portability**: Unzip on any machine, run `memvault repair --action rebuild` to rebuild index.
+Only sync directories you need:
+```bash
+# Just memories
+rsync -av ~/memvault/memories/ remote:/memvault/memories/
 
----
-
-## Design Principles
-
-### 1. Human-Readable
-
-> "If I can't `cat` it, I don't trust it."
-
-- Memories: Markdown
-- Events: JSONL
-- No binary formats (except SQLite index, which is rebuildable)
-
-### 2. Append-Only
-
-> "Never delete. Only add new versions."
-
-- Events are never removed from journal
-- Memories are versioned (old versions kept)
-- Objects are immutable (content-addressed)
-
-### 3. Content-Addressed
-
-> "Same content = same hash = deduplicated."
-
-- Identical messages stored once
-- Git-like content addressing
-- Efficient for repeated snippets (code examples, templates)
-
-### 4. Local-First
-
-> "No network required. Ever."
-
-- All data on local disk
-- No cloud APIs
-- Sync via your preferred tool (iCloud, Syncthing, Git LFS)
-
----
-
-## Storage Requirements
-
-### Example Vault (1 year of daily use)
-
-| Component | Size | Notes |
-|-----------|------|-------|
-| Events (1M messages) | 500 MB | Compressed: ~100 MB |
-| Objects (100k snapshots) | 2 GB | Deduplicated |
-| Memories (500 facts) | 1 MB | Markdown files |
-| SQLite Index | 200 MB | FTS5 tables |
-| **Total** | **~2.7 GB** | **~400 MB compressed** |
-
-**Growth**: ~7 MB/day for moderate usage (100 messages/day).
-
----
-
-## Comparison with Other Systems
-
-| System | Format | Editable | Content-Addressed | Export |
-|--------|--------|----------|-------------------|--------|
-| **Memvault** | JSONL + Markdown | ✅ Yes | ✅ Yes | ✅ ZIP |
-| **Mem0** | PostgreSQL | ❌ No | ❌ No | ⚠️ SQL dump |
-| **Zep** | PostgreSQL | ❌ No | ❌ No | ⚠️ SQL dump |
-| **LangChain** | Custom | ❌ No | ❌ No | ❌ API only |
-
----
-
-## Rebuild Index
-
-If index becomes corrupted:
-
-```sh
-memvault repair --action rebuild
+# Specific sessions
+rsync -av ~/memvault/sessions/abc123/ remote:/sessions/abc123/
 ```
 
-**What it does**:
+## Backup Strategy
 
-1. Deletes `index.db`
-2. Scans all `events/*.jsonl`
-3. Rebuilds FTS5 tables
-4. Re-indexes memories
+### Full Backup
 
-**Time**: ~1 minute per 100k messages.
+```bash
+tar czf memvault-backup-$(date +%Y%m%d).tar.gz ~/memvault/
+```
 
----
+### Incremental Backup
 
-## Learn More
+```bash
+# rsync only changed files
+rsync -av --update ~/memvault/ /backup/memvault/
+```
 
-- [Export & Backup](/guide/backup) — How to export your vault
-- [Sync Strategies](/guide/sync) — iCloud, Syncthing, Git LFS
-- [Performance Tuning](/reference/performance) — Optimize for large vaults
+### Git Backup
 
----
+```bash
+cd ~/memvault
+git init
+git add .
+git commit -m "backup $(date)"
+git push backup main
+```
 
-## References
+## Performance
 
-- [Content-Addressed Storage (Wikipedia)](https://en.wikipedia.org/wiki/Content-addressable_storage)
-- [SQLite FTS5](https://www.sqlite.org/fts5.html)
-- [JSONL Specification](https://jsonlines.org/)
-- [Git Internals (Pro Git Book)](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects)
+### Read Performance
+
+| Operation | Typical Time |
+|-----------|--------------|
+| List sessions | 1-5ms |
+| Read session meta | <1ms |
+| Load messages | 5-20ms |
+| Full-text search | 10-100ms |
+| Load memory | 1-5ms |
+
+### Write Performance
+
+| Operation | Typical Time |
+|-----------|--------------|
+| Append message | 1-5ms |
+| Update session meta | 1-5ms |
+| Write memory | 1-5ms |
+| Rebuild index | 1-10s |
+
+### Storage Size
+
+| Data Type | Size per 1000 |
+|-----------|---------------|
+| Messages | ~1-5 MB |
+| Sessions metadata | ~100 KB |
+| Memories | ~100-500 KB |
+| FTS index | ~2-10 MB |
+
+## Data Migration
+
+### Export
+
+```bash
+# Export all to JSON
+memvault export --format json --to /export/
+
+# Export specific session
+memvault sessions export abc123 --to session.json
+```
+
+### Import
+
+```bash
+# Import from export
+memvault import --from /export/
+
+# Import single session
+memvault sessions import session.json
+```
+
+## Future Improvements
+
+### Planned
+
+- Compression for old sessions
+- Archive to object storage
+- Pluggable storage backends
+- Encryption at rest
+
+### Research
+
+- CRDT-based memory merge
+- Vector embeddings for semantic search
+- Distributed storage
+
+## Best Practices
+
+### Storage Location
+
+- ✅ Use SSD for vault root (fast search)
+- ✅ Regular backups to HDD/NAS
+- ✅ Sync recent sessions to cloud
+- ✅ Archive old sessions offline
+
+### File Organization
+
+- ✅ One session = one directory
+- ✅ Immutable message files
+- ✅ Mutable memory files
+- ✅ Human-readable formats
+
+### Index Maintenance
+
+- ✅ Rebuild after bulk import
+- ✅ Rebuild after sync conflicts
+- ✅ Automatic rebuild on corruption
+
+## Next Steps
+
+- [Installation](/guide/installation) - Set up vault
+- [Archiving](/guide/archiving) - How sessions are captured
+- [Search](/guide/search) - Full-text search usage

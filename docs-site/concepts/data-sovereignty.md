@@ -1,306 +1,348 @@
-# Data Sovereignty & Compliance
+# Data Sovereignty
 
-When AI agents process conversations, they handle personal data, proprietary information, and potentially regulated content. **Data sovereignty** determines who controls this data, where it lives, and which laws govern it.
+Understanding ownership and control of your AI conversation data.
 
 ## What is Data Sovereignty?
 
-> "Data sovereignty refers to organizational control over where agent context and memory physically reside, who can access it, and which jurisdiction's laws apply."  
-> — [Atlan: Data Sovereignty for AI Agents](https://atlan.com/know/ai-agent/data-sovereignty-for-ai-agents/)
-
-For AI agent memory, this means:
-
-- **Physical location**: Which servers store conversation data
-- **Legal jurisdiction**: Which country's laws apply
-- **Access control**: Who can read, modify, or delete the data
-- **Data residency**: Requirements to keep data within specific borders
-
----
-
-## Why It Matters
-
-### GDPR & Privacy Laws
-
-The EU's General Data Protection Regulation (GDPR) requires:
-
-1. **Lawful basis** for processing personal data
-2. **Data minimization** (collect only what's necessary)
-3. **Right to erasure** (users can request deletion)
-4. **Right to access** (users can download their data)
-5. **Data protection impact assessments** for high-risk processing
-
-**Challenge for cloud memory**:
-
-When conversations flow through a U.S.-based API provider, you're subject to:
-
-- GDPR (if users are in EU)
-- CCPA (if users are in California)
-- Provider's own data retention policies
-- U.S. CLOUD Act (government access to data)
-
-**Compliance burden**: You must track data flows, ensure vendor compliance, and maintain audit logs across multiple systems.
-
----
-
-### SCHREMS II & Data Transfers
-
-The 2020 *Schrems II* ruling invalidated EU-US Privacy Shield, making transatlantic data transfers legally complex:
-
-- Standard Contractual Clauses (SCCs) are required
-- Risk assessments must consider U.S. surveillance laws
-- Many organizations now require EU-only data storage
-
-**Real-world impact**: European healthcare and government agencies often ban U.S. cloud services entirely.
-
----
-
-### Industry-Specific Regulations
-
-| Sector | Regulation | Key Requirement |
-|--------|-----------|-----------------|
-| **Healthcare** | HIPAA (US), GDPR (EU) | Protected health information must be encrypted and access-logged |
-| **Finance** | SOX, PCI-DSS | Audit trails for all data access, retention policies |
-| **Defense** | ITAR, CMMC | Air-gapped systems, U.S. persons only |
-| **Government** | FedRAMP, StateRAMP | Specific data center certifications required |
-
-**Problem**: Cloud memory providers rarely have all required certifications.
-
----
-
-## Local-First = Simplified Compliance
-
-### You Are the Data Controller
+**Data sovereignty** means you have complete legal and technical control over your data.
 
 With Memvault:
+- **You own** the files
+- **You control** who accesses them
+- **You decide** where they're stored
+- **You choose** how to sync them
 
-- Data never leaves your infrastructure
-- No third-party processors to audit
-- No cross-border data transfers
-- You define retention policies directly
+## Legal Ownership
 
-```mermaid
-graph LR
-    subgraph Cloud["☁️ Cloud Memory"]
-        C1[You: Controller] -->|Transfer| C2[Vendor: Processor]
-        C2 -->|Subprocessor| C3[Vector DB Provider]
-        C3 -->|Hosting| C4[AWS/GCP]
-        C4 -->|Backup| C5[Unknown Locations]
-    end
-    
-    subgraph Local["💾 Local Memory"]
-        L1[You: Controller] -->|Direct| L2[Your Disk]
-        L2 -->|No Transfer| L3[Same Jurisdiction]
-    end
-    
-    style Cloud fill:#f8e5e3,stroke:#e74c3c
-    style Local fill:#d6f5e3,stroke:#27ae60
-```
+### Cloud Services (ChatGPT, Claude.ai)
 
-### GDPR Compliance Made Easy
-
-#### Right to Erasure
-
-```sh
-# Forget a user completely
-memvault forget --user-id abc123
-
-# Preview impact before deleting
-memvault forget --user-id abc123 --dry-run
-```
-
-Memvault shows exactly which memories and conversations will be deleted — no vendor API calls, no "we'll process your request in 30 days."
-
-#### Right to Access
-
-```sh
-# Export all data for a user
-memvault export --user-id abc123 --out user-data.zip
-```
-
-Includes:
-
-- All conversations (Markdown format)
-- Extracted memories
-- Evidence links
-- SHA-256 checksums for integrity
-
-**Format**: Standard ZIP with human-readable files — users can inspect without proprietary tools.
-
-#### Data Protection Impact Assessment (DPIA)
-
-For local-first systems:
-
-- ✅ Data minimization: You control what's stored
-- ✅ Purpose limitation: Code is open, no hidden usage
-- ✅ Storage limitation: You set retention policies
-- ✅ Security: Encrypted disk, no network exposure
-
-**Compared to cloud**: Vendor's DPIA may not cover your specific use case.
-
----
-
-## Zero Data Retention Architecture
-
-Some high-security environments require **zero persistent storage** of conversations:
-
-> "Zero data retention architectures process prompts, context windows, and outputs in-memory only and never write to persistent storage."  
-> — [NeuralTrust: Zero Data Retention Agents](https://neuraltrust.ai/blog/zero-data-retention-agents)
-
-**Memvault supports this**:
-
-```sh
-# In-memory mode (no disk writes)
-memvault serve --mode in-memory
-```
-
-Use cases:
-
-- Defense contractors (ITAR compliance)
-- Healthcare consultation tools (HIPAA "minimum necessary")
-- Legal research (attorney-client privilege)
-
----
-
-## Memory Governance
-
-### Access Control
-
-Memvault supports role-based access:
-
-```yaml
-# config.yaml
-access_control:
-  - role: admin
-    can: [read, write, delete, export]
-  - role: agent
-    can: [read, write]
-  - role: auditor
-    can: [read, export]
-```
-
-**Principle of least privilege**: Agents get only the memory access they need.
-
-### Retention Policies
-
-```yaml
-# Auto-delete old conversations
-retention:
-  conversations:
-    max_age_days: 365
-  memories:
-    max_age_days: 0  # Never delete
-```
-
-### Audit Logs
-
-Every memory operation is logged:
-
-```json
-{
-  "timestamp": "2026-01-15T10:30:00Z",
-  "operation": "memory_update",
-  "user": "agent-123",
-  "memory_id": "abc-def-ghi",
-  "change": "updated preference"
-}
-```
-
-**Compliance benefit**: Prove who accessed what and when.
-
----
-
-## Multi-Region Deployment
-
-For global organizations:
+When you use cloud AI platforms:
 
 ```
-memvault/
-├── eu-vault/       # EU citizens' data (GDPR jurisdiction)
-├── us-vault/       # US users (CCPA jurisdiction)
-└── asia-vault/     # APAC users (local regulations)
+┌─────────────────────────────────────┐
+│  Their Servers                      │
+│  ├── Your conversations             │
+│  ├── Their terms of service         │
+│  └── Their data retention policy    │
+└─────────────────────────────────────┘
 ```
 
-Each vault stays in its region:
+- Platform owns the infrastructure
+- You have limited export rights
+- Data subject to their policies
+- Changes affect your access
 
-- No cross-border transfers
-- Local law compliance
-- Sovereign infrastructure
+### Memvault (Local-First)
 
-**Sync**: Use encrypted, audited replication if needed (not built into Memvault, but compatible with Syncthing, rsync, etc.)
+```
+┌─────────────────────────────────────┐
+│  Your Computer / Your Rules         │
+│  ├── Your conversations (owned)     │
+│  ├── Your sync choice               │
+│  └── Your retention policy          │
+└─────────────────────────────────────┘
+```
 
----
+- You own the files
+- Full export rights (it's already exported)
+- Data subject to your rules
+- No platform can change access
 
-## Comparison: Cloud vs Local Compliance
+## Technical Control
 
-| Requirement | Cloud Memory | Memvault (Local) |
-|-------------|--------------|------------------|
-| **GDPR erasure** | Vendor API request, 30-day SLA | Immediate deletion, full control |
-| **Data access** | Proprietary export format | Standard Markdown + ZIP |
-| **Cross-border transfer** | Complex SCCs, risk assessment | No transfer (data stays local) |
-| **Vendor audit** | Depends on vendor transparency | N/A (you control the code) |
-| **Retention policy** | Vendor's policy + your config | Your policy only |
-| **Air-gapped deployment** | Impossible | Fully supported |
+### What You Can Do
 
----
+**Read**: Direct file access
+```bash
+cat ~/memvault/sessions/abc123/messages/0001.json
+```
 
-## Real-World Examples
+**Search**: Your own index
+```bash
+grep -r "search term" ~/memvault/sessions/
+```
 
-### Case Study: European Healthcare Provider
+**Process**: Any tool
+```bash
+jq '.messages[] | select(.role=="user")' session.json
+```
 
-**Requirement**: GDPR compliance + medical data sovereignty.
+**Backup**: Your method
+```bash
+rsync -av ~/memvault/ /backup/memvault/
+```
 
-**Solution**: Memvault deployed on EU-based servers. No data ever sent to U.S. APIs.
+**Encrypt**: Your keys
+```bash
+# Encrypt entire vault
+tar czf - ~/memvault | gpg -e > vault.tar.gz.gpg
+```
 
-**Result**: Passed GDPR audit with zero vendor dependencies to explain.
+**Delete**: Actually delete
+```bash
+rm -rf ~/memvault/sessions/abc123/
+# It's gone. Really gone.
+```
 
----
+## Compliance Scenarios
 
-### Case Study: Defense Contractor
+### GDPR (Europe)
 
-**Requirement**: ITAR compliance (U.S. persons only, no foreign access).
+**Right to erasure**: Delete files immediately
+```bash
+memvault sessions delete <id>
+rm ~/memvault/sessions/<id>/
+```
 
-**Solution**: Air-gapped Memvault installation + zero data retention mode.
+**Data portability**: Already in open format
+```bash
+cp -r ~/memvault/ /export/
+```
 
-**Result**: Agent memory for classified design conversations without persistent storage.
+**Right to know**: Audit trail in files
+```bash
+ls -la ~/memvault/sessions/<id>/
+```
 
----
+### CCPA (California)
 
-## SuperLocalMemory Research
+**Know what's collected**: Direct file inspection
+**Delete on request**: Instant, verifiable
+**No sale of data**: It never leaves your machine
 
-Academic research supports local-first memory:
+### Corporate Policies
 
-> "[SuperLocalMemory](https://arxiv.org/abs/2603.02240) is a local-first memory system for multi-agent AI that operates without cloud dependencies or external LLM inference calls."
+**Data residency**: Files stay where you put them
+**Access control**: OS-level permissions
+**Audit trail**: File metadata + git history
+**Retention**: Your policy, enforced locally
 
-**Key findings**:
+## Multi-Device Sovereignty
 
-- Bayesian trust scoring prevents memory poisoning
-- Privacy-preserving by design (no data leaves device)
-- Resilient to network attacks (no external surface)
+### You Control Sync
 
----
+Memvault never syncs for you. You choose:
 
-## Getting Started with Compliant Memory
+**Option 1: Cloud Storage**
+```bash
+# iCloud
+~/Library/Mobile Documents/com~apple~CloudDocs/memvault/
 
-1. **Install locally**: Follow [Installation Guide](/guide/installation)
-2. **Configure retention**: Set policies in `config.yaml`
-3. **Enable audit logs**: `memvault config audit.enabled=true`
-4. **Document**: Include Memvault in your DPIA
+# Dropbox
+~/Dropbox/memvault/
+```
+→ Data passes through their servers  
+→ Subject to their terms  
+→ Encrypted in transit  
 
----
+**Option 2: Self-Hosted**
+```bash
+# Your NAS
+rsync -av ~/memvault/ nas.home:/memvault/
 
-## Learn More
+# Your server
+git remote add origin ssh://your-server/memvault.git
+```
+→ Your infrastructure  
+→ Your rules  
+→ Full control  
 
-- [Why Local-First?](/concepts/why-local-first) — Technical benefits
-- [Storage Design](/concepts/storage) — How data is organized
-- [MCP Integration](/concepts/mcp) — Agent access patterns
+**Option 3: Peer-to-Peer**
+```bash
+# Syncthing
+syncthing add ~/memvault/
+```
+→ No server  
+→ Direct device-to-device  
+→ Complete sovereignty  
 
----
+**Option 4: Air-Gapped**
+```bash
+# USB key
+cp -r ~/memvault/ /Volumes/USB/memvault/
+```
+→ Physically isolated  
+→ Maximum security  
+→ Manual sync  
 
-## References
+### Conflict Resolution
 
-- [Atlan: GDPR Compliance for AI Agents](https://atlan.com/know/ai-agent/gdpr-compliance-for-ai-agents/)
-- [Atlan: Data Sovereignty for AI Agents](https://atlan.com/know/ai-agent/data-sovereignty-for-ai-agents/)
-- [Min.io: Data Sovereignty for AI FAQ](https://www.min.io/learn/data-sovereignty-for-ai-a-practical-faq)
-- [Prediction Guard: Sovereign AI Deployment](https://predictionguard.com/blog/sovereign-ai-deployment)
-- [MintMCP: Agent Memory Governance](https://www.mintmcp.com/blog/agent-memory-governance)
-- [NeuralTrust: Zero Data Retention Agents](https://neuraltrust.ai/blog/zero-data-retention-agents)
-- [arXiv: SuperLocalMemory Paper](https://arxiv.org/abs/2603.02240)
+You own conflicts too:
+
+```markdown
+<!-- memories/preference/lang.md -->
+<<<<<<< HEAD
+User prefers Go
+=======
+User prefers Rust
+>>>>>>> Synced from laptop
+```
+
+Memvault flags but doesn't auto-resolve—you decide.
+
+## Comparison with Cloud Services
+
+| Aspect | Cloud AI | Memvault |
+|--------|----------|----------|
+| **File ownership** | Platform | You |
+| **Storage location** | Their servers | Your choice |
+| **Access control** | Platform policy | OS permissions |
+| **Deletion** | "Soft delete" | Real delete |
+| **Export** | Limited API | Direct access |
+| **Encryption** | Their keys | Your keys |
+| **Sync** | Automatic | Your choice |
+| **Terms** | Theirs | Yours |
+
+## Practical Sovereignty
+
+### Scenario 1: Corporate Requirement
+
+> "All AI conversation data must stay on-premises."
+
+✅ **Memvault**: Install on corporate machines, sync to company NAS  
+❌ **Cloud AI**: Violates policy  
+
+### Scenario 2: Sensitive Research
+
+> "Our research data can't touch third-party servers."
+
+✅ **Memvault**: Air-gapped machines, USB sync  
+❌ **Cloud AI**: Not an option  
+
+### Scenario 3: Legal Hold
+
+> "We need to preserve all AI interactions for litigation."
+
+✅ **Memvault**: Copy files, immutable archives  
+❌ **Cloud AI**: Request export, hope it's complete  
+
+### Scenario 4: Right to Be Forgotten
+
+> "A user requests deletion of their data."
+
+✅ **Memvault**: Delete files, verify with `ls`  
+❌ **Cloud AI**: Request deletion, trust platform  
+
+## Long-Term Sovereignty
+
+### Platform Changes
+
+**Cloud AI Platform**:
+- Changes terms → You must accept or lose access
+- Changes pricing → You pay or export
+- Changes export → You adapt to new format
+- Shuts down → You scramble to export
+
+**Memvault**:
+- You control files → Changes don't affect ownership
+- No pricing → It's your disk
+- No export changes → Already exported
+- You control lifecycle → Independent of any platform
+
+### Future-Proofing
+
+Your data outlives any platform:
+
+```bash
+# 2026: Today
+memvault search "query"
+
+# 2036: Still works
+grep -r "query" ~/memvault/
+
+# 2046: Still works
+cat ~/memvault/sessions/*/messages/*.json
+```
+
+Open formats guarantee access forever.
+
+## Encryption and Security
+
+### At Rest
+
+Your responsibility:
+```bash
+# Full disk encryption (macOS)
+FileVault
+
+# Folder encryption
+gpg --encrypt-files ~/memvault/
+
+# Container encryption
+VeraCrypt, LUKS
+```
+
+### In Transit
+
+If syncing:
+```bash
+# iCloud: Encrypted in transit
+# Dropbox: Encrypted in transit
+# Syncthing: Encrypted by default
+# rsync over SSH: Encrypted
+```
+
+### At Rest on Sync Service
+
+If using cloud sync:
+- **iCloud**: Encrypted with your Apple ID
+- **Dropbox**: Encrypted on their servers
+- **Google Drive**: Encrypted on their servers
+- **Self-hosted**: Your encryption
+
+## Best Practices
+
+### 1. Choose Appropriate Sync
+
+- Sensitive data → Self-hosted or P2P
+- Personal use → iCloud / Dropbox OK
+- Corporate → On-premises only
+- Air-gapped → USB / offline
+
+### 2. Regular Backups
+
+```bash
+# Daily backup
+rsync -av ~/memvault/ /backup/$(date +%Y%m%d)/
+```
+
+### 3. Access Control
+
+```bash
+# Restrict vault permissions
+chmod 700 ~/memvault/
+```
+
+### 4. Audit Trail
+
+```bash
+# Version control
+cd ~/memvault && git init
+git add . && git commit -m "daily snapshot"
+```
+
+## Summary
+
+**Data sovereignty means**:
+- ✅ Legal ownership
+- ✅ Technical control
+- ✅ Policy compliance
+- ✅ Future independence
+
+**Memvault provides**:
+- ✅ Local storage
+- ✅ Open formats
+- ✅ Direct access
+- ✅ Your choice of sync
+
+**You retain**:
+- ✅ Complete control
+- ✅ No vendor lock-in
+- ✅ Privacy by design
+- ✅ Long-term access
+
+## Next Steps
+
+- [Storage Design](/concepts/storage) - File structure details
+- [Multi-Device Sync](/guide/sync) - Sync strategies
+- [Configuration](/reference/configuration) - Security settings

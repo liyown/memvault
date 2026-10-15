@@ -1,439 +1,432 @@
 # MCP Integration
 
-Memvault exposes six [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) tools that agents use to read conversations, retrieve memories, and update facts.
+How Memvault integrates with the **Model Context Protocol** to give agents memory.
 
 ## What is MCP?
 
-Model Context Protocol is an open standard for connecting AI agents to data sources. Think of it as "USB for AI" — a unified interface for agents to access external information.
+The **Model Context Protocol** is Anthropic's standard for connecting AI agents to external data sources.
 
-```mermaid
-graph LR
-    A[AI Agent] -->|MCP Tools| B[Memvault Server]
-    B -->|Query| C[Local Vault]
-    C -->|Results| B
-    B -->|Inject Context| A
-    
-    style B fill:#3b6dff,color:#fff
-    style C fill:#6ee7b7
+With MCP, agents can:
+- Read data from local tools
+- Write data to local services
+- Access resources securely
+- Call functions with type safety
+
+## Memvault as an MCP Server
+
+Memvault exposes its functionality through MCP tools:
+
+```
+┌──────────────────────────────────┐
+│      Claude Code / Agent         │
+└──────────────┬───────────────────┘
+               │ MCP Protocol
+┌──────────────▼───────────────────┐
+│   Memvault MCP Server (stdio)    │
+├──────────────────────────────────┤
+│  • memvault_context             │
+│  • memvault_search              │
+│  • memvault_memory_update       │
+│  • memvault_session_read        │
+│  • ... (more tools)             │
+└──────────────┬───────────────────┘
+               │
+┌──────────────▼───────────────────┐
+│  Local Vault (files + SQLite)    │
+└──────────────────────────────────┘
 ```
 
-**Benefits**:
+## Available MCP Tools
 
-- Agents access memory without vendor-specific APIs
-- Works across Codex, Claude Code, OpenCode, and any MCP-compatible platform
-- Standardized request/response format
+### Core Tools
 
----
-
-## Available Tools
-
-### 1. `memvault_context`
-
-Retrieve the full context bundle for the current session: core memories, pending messages, related sessions, and summaries.
-
-**When called**:
-
-- Automatically at conversation start (via hook)
-- When agent needs to recall user preferences
-- Before making recommendations
-
-**Parameters**:
+#### `memvault_context`
+Get session state, memories, and history.
 
 ```json
+{
+  "name": "memvault_context",
+  "arguments": {
+    "session": "current",
+    "query": "optional search term"
+  }
+}
+```
+
+Returns:
+- Core memories (background, preferences)
+- Session summary
+- Related historical context
+- Pending messages
+
+#### `memvault_search`
+Full-text search across all sessions and memories.
+
+```json
+{
+  "name": "memvault_search",
+  "arguments": {
+    "query": "folder picker",
+    "limit": 10,
+    "kind": "session" // or "memory"
+  }
+}
+```
+
+#### `memvault_memory_update`
+Create or update agent memory.
+
+```json
+{
+  "name": "memvault_memory_update",
+  "arguments": {
+    "kind": "preference",
+    "title": "Code Review Style",
+    "body": "User wants security-focused reviews",
+    "evidence": [
+      {"session": "abc123", "message": "msg_01"}
+    ]
+  }
+}
+```
+
+#### `memvault_session_read`
+Read full session messages with pagination.
+
+```json
+{
+  "name": "memvault_session_read",
+  "arguments": {
+    "session": "abc123",
+    "offset": 0,
+    "limit": 100
+  }
+}
+```
+
+### Link Management
+
+#### `memvault_session_link`
+Create relationships between sessions.
+
+```json
+{
+  "name": "memvault_session_link",
+  "arguments": {
+    "from": "session_a",
+    "to": "session_b",
+    "kind": "continuation" // or "branch", "reference"
+  }
+}
+```
+
+### Maintenance
+
+#### `memvault_tasks`
+Query and claim maintenance tasks.
+
+```json
+{
+  "name": "memvault_tasks",
+  "arguments": {
+    "op": "list" // or "claim"
+  }
+}
+```
+
+## Setup
+
+### 1. Install Memvault
+
+```bash
+go install github.com/liyown/memvault/cmd/memvault@latest
+```
+
+### 2. Start MCP Server
+
+#### Claude Code
+
+Edit `~/.claude/settings.json`:
+
+```json
+{
+  "mcp": {
+    "servers": {
+      "memvault": {
+        "command": "memvault",
+        "args": ["mcp"],
+        "env": {
+          "MEMVAULT_HOME": "/Users/you/memvault"
+        }
+      }
+    }
+  }
+}
+```
+
+#### Codex
+
+Similar MCP configuration in Codex settings.
+
+### 3. Restart Agent
+
+Quit and restart Claude Code or Codex to load the MCP server.
+
+## How It Works
+
+### stdio Transport
+
+Memvault uses **stdio** (standard input/output) for MCP:
+
+```
+Agent Process          Memvault Process
+     │                       │
+     ├──────request──────────>│
+     │   (JSON-RPC)           │
+     │                        │
+     │<─────response──────────┤
+     │   (JSON-RPC)           │
+```
+
+- Fast: No network overhead
+- Secure: No exposed ports
+- Simple: No authentication needed
+
+### Session Identity
+
+Hook provides session identity:
+
+```json
+// Via hook at session start
 {
   "agent": "claude",
-  "native_id": "session-uuid",
-  "query": "optional search term"
+  "native_session_id": "4b67a8e4-b697-4ede-..."
 }
 ```
 
-**Returns**:
+Memvault maps to internal session ID:
+
+```json
+// Internal session
+{
+  "id": "f75cb010b12a8eb0...",
+  "native_id": "4b67a8e4-b697-4ede-...",
+  "agent": "claude"
+}
+```
+
+### Context Injection
+
+At session start:
+
+1. Hook fires → creates session
+2. Agent calls `memvault_context`
+3. Memvault returns memories
+4. Injected into agent's context
+
+```
+Agent Start
+   ↓
+Hook: session-start
+   ↓
+MCP: memvault_context
+   ↓
+Returns: background, preferences, summaries
+   ↓
+Agent has full context
+```
+
+## Agent Workflow
+
+### Reading Context
+
+```typescript
+// At start of session
+const context = await mcp.call("memvault_context", {
+  session: "current"
+});
+
+// Context contains:
+// - core memories (who user is, preferences)
+// - session summary (what we were doing)
+// - related history (similar past conversations)
+```
+
+### Searching History
+
+```typescript
+// When user asks about past work
+const results = await mcp.call("memvault_search", {
+  query: "folder picker implementation",
+  limit: 5
+});
+
+// Returns relevant sessions and memories
+```
+
+### Updating Memory
+
+```typescript
+// After important learning
+await mcp.call("memvault_memory_update", {
+  kind: "knowledge",
+  title: "Project uses Go",
+  body: "This codebase is Go-based. Uses embed for assets.",
+  evidence: [{
+    session: currentSession,
+    message: messageId
+  }]
+});
+```
+
+## Protocol Details
+
+### Request Format
 
 ```json
 {
-  "core": [
-    {
-      "id": "abc123",
-      "title": "User prefers Go for backend",
-      "kind": "preference",
-      "body": "User explicitly stated Go is preferred...",
-      "evidence": [
-        {"session": "xyz", "message": "msg_789"}
-      ]
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "memvault_search",
+    "arguments": {
+      "query": "test"
     }
-  ],
-  "session": {
-    "id": "current-session-id",
-    "title": "claude · session-uuid",
-    "count": 12,
-    "missing": 0
-  },
-  "summaries": [],
-  "related": []
+  }
 }
 ```
 
----
-
-### 2. `memvault_memory_update`
-
-Create or update a memory (preference, background, knowledge, or summary).
-
-**When called**:
-
-- User states a new preference
-- Agent learns a factual detail
-- End of conversation (summary)
-
-**Parameters**:
+### Response Format
 
 ```json
 {
-  "id": "optional-for-update",
-  "title": "User prefers Go for backend",
-  "kind": "preference",
-  "body": "User explicitly stated...",
-  "evidence": [
-    {"session": "xyz", "message": "msg_789"}
-  ],
-  "parents": ["parent-version-hash"],
-  "author": "claude"
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{ results JSON }"
+      }
+    ]
+  }
 }
 ```
 
-**Returns**:
+### Error Handling
 
 ```json
 {
-  "id": "abc123",
-  "revision": "hash-of-new-version"
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "code": -32603,
+    "message": "Session not found"
+  }
 }
 ```
-
-**Evidence tracking**: Every memory must cite source messages. This prevents hallucinated facts.
-
----
-
-### 3. `memvault_search`
-
-Full-text search across all conversations and memories.
-
-**When called**:
-
-- User asks "What did we discuss about X?"
-- Agent needs to find prior context
-
-**Parameters**:
-
-```json
-{
-  "query": "Go backend",
-  "kind": "all",
-  "role": "all",
-  "sort": "relevance",
-  "limit": 20,
-  "offset": 0
-}
-```
-
-**Returns**:
-
-```json
-{
-  "results": [
-    {
-      "session": "xyz",
-      "message": "msg_789",
-      "snippet": "...I prefer <mark>Go</mark> for <mark>backend</mark>...",
-      "score": 0.85
-    }
-  ],
-  "total": 1
-}
-```
-
-**Performance**: <100ms for 1M message corpus (SQLite FTS5).
-
----
-
-### 4. `memvault_session_read`
-
-Read a specific conversation in full (paginated).
-
-**When called**:
-
-- Agent needs complete context from prior session
-- User asks to continue a specific conversation
-
-**Parameters**:
-
-```json
-{
-  "session": "session-id",
-  "limit": 50,
-  "offset": 0,
-  "message": "optional-start-message-id"
-}
-```
-
-**Returns**:
-
-```json
-{
-  "messages": [
-    {
-      "version": "msg_123",
-      "role": "user",
-      "text": "Help me write a README",
-      "ts": "2026-01-15T10:30:00Z"
-    }
-  ],
-  "total": 120
-}
-```
-
----
-
-### 5. `memvault_session_link`
-
-Establish a relationship between sessions (continuation, branch, or reference).
-
-**When called**:
-
-- Conversation explicitly continues a prior one
-- User says "Let's pick up where we left off"
-
-**Parameters**:
-
-```json
-{
-  "from": "new-session-id",
-  "to": "prior-session-id",
-  "kind": "continuation"
-}
-```
-
-**Link types**:
-
-- **continuation**: Linear follow-up (same topic, same day)
-- **branch**: Alternative approach (forking from prior decision point)
-- **reference**: Cited but not directly continued
-
----
-
-### 6. `memvault_tasks`
-
-Query or claim maintenance tasks (e.g., "summarize session X").
-
-**When called**:
-
-- Agent checks for pending work (auto-invoked periodically)
-
-**Parameters**:
-
-```json
-{
-  "op": "list",
-  "owner": "current-agent"
-}
-```
-
-**Returns**:
-
-```json
-{
-  "tasks": [
-    {
-      "id": "summarize-abc123",
-      "kind": "summarize",
-      "session": "abc123",
-      "pending": 50
-    }
-  ]
-}
-```
-
-**Claiming a task**:
-
-```json
-{
-  "op": "claim",
-  "id": "summarize-abc123",
-  "owner": "claude"
-}
-```
-
-After 5 minutes without updates, the claim expires.
-
----
 
 ## Security Model
 
-### Read Access
+### No Authentication
 
-All tools are **read-only by default** except `memvault_memory_update`.
+- stdio transport → same user
+- No network exposure
+- Process isolation via OS
 
-- Agents can read conversations they participated in
-- Cross-session reads require user confirmation (Codex/Claude Code prompt)
+### Permission Model
 
-### Write Access
+- Read: Always allowed
+- Write: Requires session ownership
+- Delete: Not exposed via MCP
 
-- Only `memvault_memory_update` modifies data
-- Evidence is mandatory (no unsourced facts)
-- Conflicts are detected via version hashes
+### Data Validation
 
----
+- All inputs validated
+- SQL injection prevented (prepared statements)
+- Path traversal blocked
+- Size limits enforced
 
-## Error Handling
+## Debugging
 
-### Common Errors
+### Enable Verbose Mode
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `session_not_found` | Session ID doesn't exist | Verify ID from `memvault_context` |
-| `memory_conflict` | Concurrent update | Re-read memory, merge changes, retry |
-| `missing_evidence` | No source citations | Add `evidence` array with session + message |
-| `invalid_kind` | Unknown memory type | Use: preference, background, knowledge, summary |
-
-### Example: Conflict Resolution
-
-```json
-// Agent A and Agent B both update same memory
-
-// Agent A writes first
-{"id": "mem1", "parents": ["v1"], "body": "New text A"}
-// → Success, new revision "v2"
-
-// Agent B tries to write
-{"id": "mem1", "parents": ["v1"], "body": "New text B"}
-// → Error: conflict (parent v1 is stale)
-
-// Agent B resolves
-1. Read memory (gets version "v2")
-2. Merge "New text B" into "v2"
-3. Retry: {"id": "mem1", "parents": ["v2"], "body": "Merged text"}
-// → Success
+```bash
+export MEMVAULT_LOG_LEVEL=debug
+memvault mcp
 ```
 
----
+### Test Tool Manually
 
-## Usage Patterns
-
-### Pattern 1: Context-Aware Greeting
-
-```typescript
-// At conversation start
-const ctx = await mcp.call('memvault_context', {
-  agent: 'claude',
-  native_id: session.id
-})
-
-const prefs = ctx.core.filter(m => m.kind === 'preference')
-// "I see you prefer Go for backend. Let's use that."
+```bash
+# Send JSON-RPC request
+echo '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"memvault_search","arguments":{"query":"test"}}}' | memvault mcp
 ```
 
----
+### Check Logs
 
-### Pattern 2: Summarize on Exit
-
-```typescript
-// End of conversation
-await mcp.call('memvault_memory_update', {
-  kind: 'summary',
-  session: session.id,
-  title: 'README improvement discussion',
-  body: `
-    Discussed E-E-A-T principles for README.
-    Decided to add performance benchmarks and competitor comparison.
-    Next: Implement GitHub Pages deployment.
-  `,
-  evidence: [
-    {session: session.id, message: 'msg_456'},
-    {session: session.id, message: 'msg_789'}
-  ],
-  covered: ['msg_123', 'msg_456', 'msg_789']
-})
+```bash
+tail -f ~/.memvault/logs/mcp.log
 ```
 
----
+## Performance
 
-### Pattern 3: Cross-Session Continuation
+### Latency
 
-```typescript
-// User says: "Continue yesterday's discussion"
+| Operation | Typical Time |
+|-----------|--------------|
+| `memvault_context` | 10-50ms |
+| `memvault_search` | 20-100ms |
+| `memvault_memory_update` | 5-20ms |
+| `memvault_session_read` | 10-50ms |
 
-// 1. Search for recent sessions
-const results = await mcp.call('memvault_search', {
-  query: 'README discussion',
-  sort: 'recent',
-  limit: 5
-})
+### Caching
 
-// 2. Retrieve full context
-const prior = await mcp.call('memvault_session_read', {
-  session: results[0].session
-})
+- Session context cached
+- Search index in memory
+- File reads cached by OS
 
-// 3. Link sessions
-await mcp.call('memvault_session_link', {
-  from: current_session,
-  to: prior.session,
-  kind: 'continuation'
-})
+## Comparison with Other Approaches
 
-// 4. Inject context
-"Last time we discussed..."
-```
+### Webhooks
 
----
+❌ Requires server  
+❌ Network latency  
+❌ Authentication needed  
+❌ Exposed to network  
 
-## MCP Server Configuration
+### REST API
 
-Memvault runs as an MCP server on `http://127.0.0.1:27961/mcp`.
+❌ Port binding  
+❌ HTTP overhead  
+❌ CORS issues  
+❌ Auth complexity  
 
-### Codex/Claude Code
+### MCP (stdio)
 
-Hooks auto-install the MCP configuration. Manual setup:
+✅ No server needed  
+✅ Zero network overhead  
+✅ OS-level security  
+✅ Simple integration  
 
-```json
-{
-  "mcpServers": {
-    "memvault": {
-      "url": "http://127.0.0.1:27961/mcp",
-      "transport": "sse"
-    }
-  }
-}
-```
+## Future Extensions
 
-### Custom MCP Clients
+### Planned Tools
 
-```python
-import requests
+- `memvault_export` - Export sessions
+- `memvault_stats` - Usage statistics
+- `memvault_conflicts` - List memory conflicts
 
-response = requests.post(
-  'http://127.0.0.1:27961/mcp/memvault_context',
-  json={
-    'agent': 'my-agent',
-    'native_id': 'session-123'
-  }
-)
+### Resource Providers
 
-context = response.json()
-```
+MCP resources for:
+- Memory files (read via URI)
+- Session archives (read via URI)
+- Search indices (query via URI)
 
----
+## Next Steps
 
-## Learn More
-
-- [MCP Specification](https://modelcontextprotocol.io/)
-- [MCP Tool Reference](/reference/mcp-tools) — Complete API docs
-- [Agent Memory Guide](/guide/memory) — How to use memory effectively
-
----
-
-## References
-
-- [Model Context Protocol](https://modelcontextprotocol.io/)
-- [MCP GitHub Repository](https://github.com/modelcontextprotocol/specification)
-- [Anthropic MCP Quickstart](https://docs.anthropic.com/en/docs/build-with-claude/mcp)
+- [Agent Memory Guide](/guide/memory) - Using memory in practice
+- [CLI Reference](/reference/cli) - Command-line tools
+- [Configuration](/reference/configuration) - MCP settings
