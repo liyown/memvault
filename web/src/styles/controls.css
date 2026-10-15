@@ -1,0 +1,538 @@
+/* Buttons: primary (one per view), default (outlined), ghost, icon, danger. */
+button,
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: var(--control);
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background var(--fast) ease,
+    border-color var(--fast) ease,
+    color var(--fast) ease,
+    box-shadow var(--fast) ease;
+}
+button svg,
+.button svg {
+  flex-shrink: 0;
+}
+button:not(:disabled):hover,
+.button:hover {
+  background: var(--hover);
+  border-color: var(--line-strong);
+}
+button:disabled {
+  cursor: not-allowed;
+  color: var(--faint);
+  background: var(--sunken);
+  border-color: var(--line);
+}
+.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 12%) inset;
+}
+.primary:not(:disabled):hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: #fff;
+}
+.danger {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+.danger:not(:disabled):hover {
+  background: #8c322d;
+  border-color: #8c322d;
+  color: #fff;
+}
+.ghost,
+.icon-button {
+  border-color: transparent;
+  background: transparent;
+  color: var(--muted);
+}
+.ghost:not(:disabled):hover,
+.icon-button:not(:disabled):hover,
+.button.icon-button:hover {
+  background: var(--hover);
+  border-color: transparent;
+  color: var(--ink);
+}
+.ghost:disabled,
+.icon-button:disabled {
+  background: transparent;
+  border-color: transparent;
+}
+.ghost.pressed {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+.icon-button {
+  width: var(--control-sm);
+  min-height: var(--control-sm);
+  height: var(--control-sm);
+  padding: 0;
+}
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.button-row.end {
+  justify-content: flex-end;
+}
+.button-row.center {
+  justify-content: center;
+  padding: 16px 0;
+}
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* Async buttons keep their width while busy. */
+.async-button {
+  position: relative;
+}
+.button-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.async-button.is-pending .button-content {
+  visibility: hidden;
+}
+.button-progress {
+  position: absolute;
+  inset: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.async-button.is-pending {
+  color: var(--muted);
+}
+
+/* Fields */
+input:not([type="checkbox"]),
+textarea,
+select {
+  width: 100%;
+  min-height: var(--control);
+  padding: 0 11px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 14px;
+  transition:
+    border-color var(--fast) ease,
+    box-shadow var(--fast) ease;
+}
+textarea {
+  padding: 10px 12px;
+  line-height: 1.7;
+  resize: vertical;
+}
+input::placeholder,
+textarea::placeholder {
+  color: var(--faint);
+}
+input:not([type="checkbox"]):focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px rgb(79 122 91 / 16%);
+}
+input:disabled,
+textarea:disabled {
+  color: var(--muted);
+  background: var(--sunken);
+}
+input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+.field {
+  display: grid;
+  gap: 6px;
+}
+.field + .field {
+  margin-top: 16px;
+}
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.field-note {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.field-error {
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--danger);
+}
+.input-affix {
+  display: flex;
+  align-items: stretch;
+  max-width: 260px;
+}
+.input-affix input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.input-affix span {
+  display: flex;
+  flex-shrink: 0;
+  white-space: nowrap;
+  align-items: center;
+  padding: 0 12px;
+  border: 1px solid var(--line-strong);
+  border-left: 0;
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  background: var(--sunken);
+  color: var(--muted);
+  font-size: 13px;
+}
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.check input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+/* Select keeps the native menu, with a consistent closed state. */
+.select-field {
+  position: relative;
+  display: inline-flex;
+  min-width: 0;
+}
+.select-field select {
+  appearance: none;
+  padding-right: 32px;
+  cursor: pointer;
+}
+.select-field.compact select {
+  min-height: var(--control-sm);
+  padding-left: 10px;
+  padding-right: 28px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.select-chevron {
+  position: absolute;
+  right: 9px;
+  top: 50%;
+  display: flex;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--faint);
+}
+.select-chevron svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Switch */
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.switch-track {
+  position: relative;
+  width: 30px;
+  height: 18px;
+  border-radius: 9px;
+  background: var(--line-strong);
+  transition: background var(--fast) ease;
+  flex-shrink: 0;
+}
+.switch-track::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 20%);
+  transition: transform var(--panel) var(--ease);
+}
+.switch input:checked + .switch-track {
+  background: var(--accent);
+}
+.switch input:checked + .switch-track::after {
+  transform: translateX(12px);
+}
+.switch input:focus-visible + .switch-track {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.switch input:disabled + .switch-track {
+  opacity: 0.5;
+}
+
+/* Segmented control */
+.segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--r-sm);
+  background: var(--sunken);
+}
+.segmented button {
+  min-height: 26px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: var(--r-xs);
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+}
+.segmented button:not(:disabled):hover {
+  background: rgb(255 255 255 / 55%);
+  color: var(--ink);
+}
+.segmented button.active,
+.segmented button.active:not(:disabled):hover {
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 1px 2px rgb(31 36 32 / 10%);
+}
+
+/* Search */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--control);
+  padding: 0 6px 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  background: var(--paper);
+  color: var(--faint);
+  transition:
+    border-color var(--fast) ease,
+    box-shadow var(--fast) ease;
+}
+.search-box:focus-within {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 3px rgb(79 122 91 / 16%);
+}
+.search-box input,
+.search-box input:focus {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.search-box .icon-button {
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+}
+
+/* Status vocabulary: one dot + text, three tones. */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--prose);
+  white-space: nowrap;
+}
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--faint);
+  flex-shrink: 0;
+}
+.tone-good .status-dot,
+.status-dot.tone-good {
+  background: var(--good);
+  box-shadow: 0 0 0 3px var(--good-soft);
+}
+.tone-warning .status-dot,
+.status-dot.tone-warning {
+  background: var(--warning);
+  box-shadow: 0 0 0 3px var(--warning-soft);
+}
+.tone-danger .status-dot {
+  background: var(--danger);
+}
+.flag {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: var(--r-xs);
+  background: var(--sunken);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+.flag.tone-warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+/* Agent identity: one neutral glyph style, tinted only by text colour. */
+.agent-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--r-xs);
+  background: var(--sunken);
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.agent-codex {
+  background: #e4ebe2;
+  color: #3d5a46;
+}
+.agent-claude {
+  background: #f1e7dc;
+  color: #8a5a35;
+}
+.agent-opencode {
+  background: #e4e7ee;
+  color: #4b5772;
+}
+
+.loading-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+/* Disclosure */
+.disclosure-trigger {
+  min-height: var(--control-sm);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+}
+.disclosure-trigger:not(:disabled):hover {
+  background: transparent;
+  color: var(--accent-hover);
+}
+.disclosure-chevron {
+  display: flex;
+  transform: rotate(-90deg);
+  transition: transform var(--panel) var(--ease);
+}
+.disclosure-chevron svg {
+  width: 14px;
+  height: 14px;
+}
+.is-open .disclosure-chevron {
+  transform: none;
+}
+.disclosure-region {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--panel) var(--ease),
+    opacity var(--panel) ease,
+    visibility 0s var(--panel);
+}
+.disclosure-region > div {
+  overflow: hidden;
+  min-height: 0;
+}
+.disclosure-content {
+  padding: 12px 4px 4px;
+}
+.disclosure.is-open .disclosure-region {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+/* Popover menu */
+.menu-anchor {
+  position: relative;
+}
+.popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 40;
+  min-width: 200px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--paper);
+  box-shadow: var(--shadow-pop);
+  animation: pop-in var(--fast) var(--ease);
+}
+.popover button {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 10px;
+  min-height: 34px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  font-weight: 400;
+}
+.popover button:hover,
+.popover button:focus-visible {
+  background: var(--hover);
+  outline: none;
+}
