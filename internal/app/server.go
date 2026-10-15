@@ -126,6 +126,30 @@ func (s *Server) api(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		response(w, object{"accepted": true, "note": "正在复制并校验档案；完成后刷新页面。旧目录保留。"}, launchSetup(e.configSnapshot(), p.Root))
+	case path == "pick":
+		if !requireMethod(w, r, "POST") {
+			return
+		}
+		var p pickRequest
+		if err := decode(r, &p); err != nil {
+			response(w, nil, err)
+			return
+		}
+		picked, err := pickPath(r.Context(), p)
+		switch {
+		case errors.Is(err, errPickCancelled):
+			response(w, object{"cancelled": true}, nil)
+		case errors.Is(err, errPickUnsupported):
+			response(w, object{"unsupported": true}, nil)
+		default:
+			response(w, object{"path": picked}, err)
+		}
+	case path == "browse":
+		if !requireMethod(w, r, "GET") {
+			return
+		}
+		v, err := browseDir(q.Get("path"), q.Get("files") == "1")
+		response(w, v, err)
 	case path == "shutdown":
 		if !requireMethod(w, r, "POST") {
 			return
