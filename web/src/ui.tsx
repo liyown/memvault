@@ -4,7 +4,131 @@ import type {
   ReactNode,
   SelectHTMLAttributes,
 } from "react";
-import { Check, ChevronDown, Copy, LoaderCircle } from "lucide-react";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import {
+  BookOpen,
+  Check,
+  ChevronDown,
+  Copy,
+  LoaderCircle,
+  Search,
+} from "lucide-react";
+import { names, type Tone } from "./api";
+
+export function PageHeader({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description?: ReactNode;
+  children?: ReactNode;
+}) {
+  return (
+    <header className="page-header">
+      <div>
+        <h1>{title}</h1>
+        {description && <p>{description}</p>}
+      </div>
+      {children && <div className="page-actions">{children}</div>}
+    </header>
+  );
+}
+
+export function StatusBadge({
+  tone = "neutral",
+  children,
+}: {
+  tone?: Tone;
+  children: ReactNode;
+}) {
+  return (
+    <span className={`status-badge tone-${tone}`}>
+      <span className="status-dot" aria-hidden="true" />
+      {children}
+    </span>
+  );
+}
+
+export function AgentMark({ agent }: { agent: string }) {
+  return (
+    <span className={`agent-mark agent-${agent}`} aria-hidden="true">
+      {(names[agent] ?? agent ?? "?").slice(0, 1)}
+    </span>
+  );
+}
+
+export function Segmented<T extends string>({
+  value,
+  options,
+  onChange,
+  label,
+}: {
+  value: T;
+  options: { value: T; label: string }[];
+  onChange: (value: T) => void;
+  label: string;
+}) {
+  return (
+    <div className="segmented" role="radiogroup" aria-label={label}>
+      {options.map((o) => (
+        <button
+          key={o.value}
+          role="radio"
+          aria-checked={value === o.value}
+          className={value === o.value ? "active" : ""}
+          onClick={() => onChange(o.value)}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function Prose({ text }: { text: string }) {
+  return (
+    <div className="prose">
+      <Markdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          a: ({ children, ...props }) => (
+            <a {...props} target="_blank" rel="noreferrer">
+              {children}
+            </a>
+          ),
+        }}
+      >
+        {text}
+      </Markdown>
+    </div>
+  );
+}
+
+export function Empty({
+  title,
+  body,
+  icon = "book",
+  children,
+}: {
+  title: string;
+  body: string;
+  icon?: "book" | "search";
+  children?: ReactNode;
+}) {
+  const Icon = icon === "book" ? BookOpen : Search;
+  return (
+    <div className="empty">
+      <span className="empty-icon">
+        <Icon size={22} strokeWidth={1.6} />
+      </span>
+      <h3>{title}</h3>
+      <p>{body}</p>
+      {children && <div className="empty-actions">{children}</div>}
+    </div>
+  );
+}
 
 export function SelectField({
   children,
@@ -110,7 +234,15 @@ export function Disclosure({
   );
 }
 
-export function CopyButton({ text, label }: { text: string; label: string }) {
+export function CopyButton({
+  text,
+  label,
+  size = 16,
+}: {
+  text: string;
+  label: string;
+  size?: number;
+}) {
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
   useEffect(() => {
     if (state === "idle") return;
@@ -137,7 +269,7 @@ export function CopyButton({ text, label }: { text: string; label: string }) {
         }
       }}
     >
-      {state === "copied" ? <Check size={16} /> : <Copy size={16} />}
+      {state === "copied" ? <Check size={size} /> : <Copy size={size} />}
       <span className="sr-only" role="status">
         {state !== "idle" ? feedback : ""}
       </span>
