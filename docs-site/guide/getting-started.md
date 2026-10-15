@@ -1,298 +1,144 @@
 # Getting Started
 
-This guide will have you up and running with Memvault in under 5 minutes.
+Get Memvault running in 5 minutes.
 
 ## Prerequisites
 
-- macOS 11+ or Linux (Windows support coming soon)
-- 2GB free disk space
-- One of: Codex, Claude Code, or OpenCode installed
+- Go 1.23 or later
+- macOS, Linux, or Windows
+- Supported agent: Claude Code or Codex
 
 ## Installation
 
-### macOS (Homebrew)
+### Option 1: From Source
 
-```sh
-brew tap memvault-org/tap
-brew install memvault
+```bash
+git clone https://github.com/liyown/memvault.git
+cd memvault
+go build -o bin/memvault ./cmd/memvault
 ```
 
-### Linux / Manual Install
+Add to PATH:
+```bash
+# macOS/Linux
+export PATH="$PATH:$(pwd)/bin"
 
-Download the latest release for your platform:
-
-```sh
-# macOS ARM64
-curl -LO https://github.com/memvault-org/memvault/releases/latest/download/memvault_VERSION_darwin_arm64.tar.gz
-tar xzf memvault_VERSION_darwin_arm64.tar.gz
-sudo mv memvault /usr/local/bin/
-
-# Linux AMD64
-curl -LO https://github.com/memvault-org/memvault/releases/latest/download/memvault_VERSION_linux_amd64.tar.gz
-tar xzf memvault_VERSION_linux_amd64.tar.gz
-sudo mv memvault /usr/local/bin/
+# Or copy to a directory in PATH
+cp bin/memvault /usr/local/bin/
 ```
 
-Verify installation:
+### Option 2: Direct Install
 
-```sh
+```bash
+go install github.com/liyown/memvault/cmd/memvault@latest
+```
+
+## Verify Installation
+
+```bash
 memvault version
-# memvault 0.1.0
 ```
 
----
+## Initial Setup
 
-## Setup Your Vault
+### 1. Initialize Vault
 
-Initialize a memory vault (this is where conversations are stored):
-
-```sh
-memvault setup --root ~/memvault
+```bash
+memvault init
 ```
 
-**What this does**:
+This creates:
+- `~/memvault` - conversation archives
+- `~/.memvault/config.yaml` - configuration
+- Database indices for search
 
-1. Creates vault directory structure
-2. Installs hooks for Codex/Claude Code/OpenCode
-3. Initializes SQLite index
-4. Generates config file
+### 2. Configure Agent Hooks
 
-**macOS Permission Prompt**: You'll be asked to grant Accessibility and File System access. This is required for hook installation.
+#### Claude Code
 
-### Folder Picker
+Edit `~/.claude/settings.json`:
 
-On first run, you can choose the vault location via native file picker:
-
-```sh
-memvault setup
-# Opens macOS folder picker dialog
+```json
+{
+  "hooks": {
+    "SessionStart": "memvault hook session-start",
+    "UserPromptSubmit": "memvault hook user-prompt-submit"
+  }
+}
 ```
 
----
+Restart Claude Code to activate hooks.
 
-## Verify Integrations
+#### Codex
 
-Open the web UI:
+Edit Codex settings:
 
-```sh
-memvault open
+```json
+{
+  "hooks": {
+    "onSessionStart": "memvault hook session-start",
+    "onUserPrompt": "memvault hook user-prompt-submit"
+  }
+}
 ```
 
-Navigate to **Sources** page. You should see:
+### 3. Start Server (Optional)
 
-| Source | Hook Installed | Hook Invoked | CLI Available |
-|--------|---------------|--------------|---------------|
-| Codex | ✅ | ⏳ Pending | ✅ |
-| Claude Code | ✅ | ⏳ Pending | ✅ |
-| OpenCode | ✅ | ⏳ Pending | ❌ |
+For web UI and MCP server:
 
-**"Hook Invoked"** changes to ✅ after your first conversation post-setup.
-
-**Note**: Codex requires you to **trust the hook** on first run. Click "Trust" in the native Codex prompt.
-
----
-
-## Start Chatting
-
-Open any supported platform and start a conversation:
-
-```
-You: "Test archiving"
-Assistant: "Hello! How can I help?"
+```bash
+memvault serve
 ```
 
-**That's it!** Conversations are now archived automatically.
+Default: `http://localhost:27961`
 
----
+## Verify It Works
 
-## Explore Your Archive
+### Archive Check
 
-### Web UI
+Have a conversation in your agent, then:
 
-```sh
-memvault open
+```bash
+memvault sessions list
 ```
 
-Features:
+You should see your session listed.
 
-- **Sessions**: Browse all conversations by date/source
-- **Search**: Full-text search across all messages
-- **Memories**: View extracted facts and preferences
-- **Sources**: Check integration status
+### Search Check
 
-### CLI Search
-
-```sh
-# Search all conversations
-memvault search "test archiving"
-
-# Filter by source
-memvault search "test" --source codex
-
-# Show specific session
-memvault show <session-id>
+```bash
+memvault search "your query"
 ```
 
----
+### MCP Check
 
-## Give Agents Memory
-
-Agents automatically use memory via MCP (Model Context Protocol) tools — no extra configuration needed.
-
-### How It Works
-
-```mermaid
-sequenceDiagram
-    participant Agent
-    participant MCP
-    participant Memvault
-    
-    Agent->>MCP: memvault_context
-    MCP->>Memvault: Query memories + sessions
-    Memvault-->>MCP: Context bundle
-    MCP-->>Agent: Inject into conversation
-    
-    Agent->>MCP: memvault_memory_update
-    MCP->>Memvault: Save new fact
-    Memvault-->>MCP: Confirmed
-    MCP-->>Agent: Memory updated
-```
-
-### Example: Agent Remembers Your Preferences
-
-**First conversation**:
-
-```
-You: "I prefer Go for backend and React for frontend"
-Agent: "Noted! I'll remember that."
-```
-
-**Next day** (different conversation):
-
-```
-You: "Help me start a web project"
-Agent: "Since you prefer Go + React, here's a starter template..."
-```
-
-The agent retrieved your preference from memory automatically.
-
----
-
-## Configuration
-
-### Config File Location
-
-- macOS: `~/Library/Application Support/memvault/config.yaml`
-- Linux: `~/.config/memvault/config.yaml`
-
-### Common Settings
-
-```yaml
-# Vault location
-vault_dir: /Users/you/memvault
-
-# Web UI port
-server:
-  port: 27961
-
-# Search language
-search:
-  languages: [en, zh]
-
-# Auto-archive sources
-sources:
-  codex: enabled
-  claude: enabled
-  opencode: enabled
-```
-
----
-
-## Multi-Device Sync
-
-Memvault doesn't include built-in sync. Use your preferred tool:
-
-### iCloud Drive
-
-```sh
-memvault setup --root ~/Library/Mobile\ Documents/com~apple~CloudDocs/memvault
-```
-
-### Syncthing
-
-1. Install [Syncthing](https://syncthing.net/)
-2. Share vault folder across devices
-3. Each device maintains its own SQLite index (auto-rebuilt from journal)
-
-### Git LFS
-
-```sh
-cd ~/memvault
-git init
-git lfs track "objects/**"
-git add .
-git commit -m "Initial vault"
-git remote add origin <your-repo>
-git push
-```
-
-**Note**: Journal files are plain JSONL — no LFS needed. Only `objects/` directory uses LFS.
-
----
+In Claude Code, the agent should now have access to `memvault_*` tools.
 
 ## Next Steps
 
-- [Conversation Archiving](/guide/archiving) — How archiving works
-- [Full-Text Search](/guide/search) — Advanced search queries
-- [Agent Memory](/guide/memory) — Memory maintenance guide
-
----
+- [Archiving Guide](/guide/archiving) - How conversation capture works
+- [Search Guide](/guide/search) - Full-text search usage
+- [Memory Guide](/guide/memory) - Agent memory system
+- [CLI Reference](/reference/cli) - All commands
 
 ## Troubleshooting
 
-### "Hook not invoked" after setup
+### "Hooks not firing"
 
-**Cause**: Haven't started a conversation yet post-setup.
+1. Check hook configuration in agent settings
+2. Restart agent after adding hooks
+3. Verify `memvault` is in PATH: `which memvault`
 
-**Fix**: Open Codex/Claude Code and send any message.
+### "No sessions captured"
 
----
+1. Ensure hooks are configured (see above)
+2. Check agent is supported (Claude Code / Codex)
+3. Look for errors: `tail -f ~/.memvault/logs/memvault.log`
 
-### Codex "Untrusted hook" warning
+### "MCP tools not available"
 
-**Cause**: Codex requires explicit trust for new hooks.
+1. Ensure server is running: `memvault serve`
+2. Check MCP config: `cat ~/.config/claude/mcp.json`
+3. Restart Claude Code
 
-**Fix**: Click "Trust" in the Codex prompt. This only happens once.
-
----
-
-### Web UI won't open
-
-**Cause**: Port 27961 already in use.
-
-**Fix**: Change port in config or kill conflicting process:
-
-```sh
-lsof -i :27961
-kill <PID>
-```
-
----
-
-### Performance issues with large vaults
-
-**Cause**: SQLite index needs optimization.
-
-**Fix**: Rebuild index:
-
-```sh
-memvault repair --action rebuild
-```
-
----
-
-## Get Help
-
-- [GitHub Discussions](https://github.com/memvault-org/memvault/discussions)
-- [Report Issues](https://github.com/memvault-org/memvault/issues)
-- [Contributing Guide](https://github.com/memvault-org/memvault/blob/main/CONTRIBUTING.md)
+For more help, see [Configuration Reference](/reference/configuration).

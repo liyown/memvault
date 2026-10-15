@@ -1,156 +1,269 @@
 # Conversation vs Memory
 
-Understanding the difference between conversations and memories is crucial to how Memvault works.
+Understanding Memvault's dual-layer architecture.
 
-## What is a Conversation?
+## The Two Layers
 
-A **conversation** (also called a **session**) is a single interaction thread between you and an AI agent. It includes:
+### 1. Conversations (Archive Layer)
 
-- All messages exchanged (user prompts + assistant responses)
-- Timestamps for each message
-- Platform metadata (Codex, Claude Code, OpenCode)
-- Attachments (if any)
+**Complete, immutable records** of all agent interactions.
 
-**Key characteristics**:
-- Ephemeral by default in most AI platforms
-- Linear message sequence
-- Complete context for that specific interaction
+- Stored in structured format (JSON + Markdown)
+- One file per session
+- Never modified after creation
+- Contains:
+  - Full message history
+  - Attachments and artifacts
+  - Metadata (timestamps, agent, model)
+  - Edit history
 
-### Example Conversation
+**Think of it as**: Your conversation database.
 
-```
-You: "Help me write a README for my project"
-Assistant: "I'd be happy to help. What does your project do?"
-You: "It's a local-first memory system for AI agents"
-Assistant: "Great! Here's a draft README structure..."
-```
+**Use for**:
+- Historical reference
+- Full-text search
+- Audit trail
+- Data export
 
-This entire exchange is **one conversation**.
+### 2. Memories (Semantic Layer)
 
----
+**Extracted, agent-maintained knowledge** from conversations.
 
-## What is Memory?
+- Stored as Markdown files
+- Continuously updated
+- Four types:
+  - **Background**: Who you are, role, expertise
+  - **Preference**: How you like to work
+  - **Knowledge**: Facts learned from conversations
+  - **Summary**: Session summaries
 
-**Memory** is persistent knowledge extracted from conversations and stored for future use. Memories are:
+**Think of it as**: Your agent's working memory.
 
-- Facts about you (preferences, background, expertise)
-- Decisions made in past conversations
-- Summaries of long discussions
-- Knowledge learned over time
+**Use for**:
+- Providing context to agents
+- Cross-session continuity
+- Personalization
+- Knowledge retention
 
-**Key characteristics**:
-- Persistent across sessions
-- Structured with evidence (source tracing)
-- Actively maintained and updated
-- Injected into future conversations
-
-### Memory Types in Memvault
-
-| Type | Purpose | Example |
-|------|---------|---------|
-| **Background** | Who you are | "User is a Go developer with 5 years experience" |
-| **Preference** | How you work | "Prefers table-driven tests in Go" |
-| **Knowledge** | Domain facts | "Project uses SQLite FTS5 for full-text search" |
-| **Summary** | Conversation recap | "Discussed README structure and E-E-A-T principles" |
-
----
-
-## The Relationship
-
-```mermaid
-graph LR
-    A[Conversation 1] --> E[Extract Facts]
-    B[Conversation 2] --> E
-    C[Conversation 3] --> E
-    E --> M[Memories]
-    M --> F1[Future Conversation 1]
-    M --> F2[Future Conversation 2]
-    M --> F3[Future Conversation 3]
-    
-    style M fill:#3b6dff,stroke:#2952cc,color:#fff
-    style E fill:#6ee7b7,stroke:#4ade80
-```
-
-**Conversations** are the raw material. **Memories** are the refined, persistent knowledge.
-
----
-
-## Why This Matters
-
-### Without Memory
-
-Every conversation starts from zero:
+## How They Interact
 
 ```
-Day 1: "I prefer functional programming"
-Day 2: "What's your coding style?" (agent forgot)
-Day 3: "Do you like OOP or FP?" (agent still doesn't know)
+┌─────────────────┐
+│  Agent Session  │
+└────────┬────────┘
+         │
+         ├─────► Archives (complete record)
+         │       └─► Full-text index
+         │
+         └─────► Memories (extracted facts)
+                 └─► Agent context
 ```
 
-### With Memory
+### During Conversation
 
-The agent remembers:
+1. Agent asks for memory context via MCP
+2. Memvault returns relevant memories
+3. Conversation happens
+4. Raw transcript saved to archive
+5. Agent updates memories based on new learnings
+
+### Between Sessions
+
+- Archives remain unchanged
+- Memories can be:
+  - Read by new agent sessions
+  - Updated with new facts
+  - Conflicted (when edited by multiple agents)
+  - Exported for sync
+
+## Examples
+
+### Conversation Record
+
+```json
+// sessions/f75cb010/messages/0001.json
+{
+  "role": "user",
+  "content": "I prefer Go for system tools",
+  "timestamp": "2026-10-15T08:00:00Z"
+}
+```
+
+### Extracted Memory
+
+```markdown
+<!-- memories/preference/language-choice.md -->
+# Language Preference for System Tools
+
+User prefers Go for building system utilities and CLI tools.
+
+**Why**: Performance, single-binary distribution, cross-platform.
+
+**Evidence**: session f75cb010, message 0001
+```
+
+## Key Differences
+
+| Aspect | Conversations | Memories |
+|--------|--------------|----------|
+| **Mutability** | Immutable | Mutable |
+| **Granularity** | Message-level | Fact-level |
+| **Structure** | Chronological | Semantic |
+| **Size** | Large (full text) | Small (key facts) |
+| **Access** | Search | Direct load |
+| **Lifetime** | Permanent | Updated |
+
+## Agent Workflow
+
+### Reading Memory
+
+Before answering:
 
 ```
-Day 1: "I prefer functional programming" 
-       → Memory: "User prefers functional programming style"
-Day 2: Agent already knows your preference
-Day 3: Agent suggests FP patterns automatically
+Agent: memvault_context(session="current")
+→ Returns: background, preferences, relevant knowledge
+Agent: Uses context to inform response
 ```
 
----
+### Writing Memory
 
-## Industry Terminology
+After important exchange:
 
-Different frameworks use different terms:
+```
+Agent: memvault_memory_update(
+  kind="preference",
+  title="Code Review Depth",
+  body="User wants security-focused reviews",
+  evidence=[{session, message}]
+)
+→ Memory saved as Markdown
+```
 
-| Framework | Short-Term | Long-Term |
-|-----------|------------|-----------|
-| **Memvault** | Conversation | Memory |
-| **LangChain** | Session Memory | Long-Term Memory |
-| **Mem0** | Context Window | Persistent Memory |
-| **Zep** | Chat History | User Facts |
+## Why Both?
 
-The concept is the same: **ephemeral context** vs **persistent knowledge**.
+### Archives Alone
 
----
+❌ No semantic understanding  
+❌ Agent must re-read everything  
+❌ Slow context retrieval  
 
-## How Memvault Handles Both
+### Memories Alone
 
-### Conversation Archiving
+❌ Lose original context  
+❌ No audit trail  
+❌ Can't correct mistakes  
 
-Every message is stored as-is:
+### Together
 
-- Full message text
-- Timestamps
-- Platform source
-- Original snapshots (checksummed)
+✅ Fast semantic access (memories)  
+✅ Complete audit trail (archives)  
+✅ Agents build context efficiently  
+✅ Human can verify and correct  
 
-**Purpose**: Complete audit trail, searchable history.
+## Memory Types in Detail
 
-### Memory Extraction
+### Background
 
-Agents automatically extract meaningful facts:
+Who you are:
 
-- Evidence-backed (links to source messages)
-- Version-tracked (concurrent updates handled)
-- Human-editable (Markdown files)
+```markdown
+# User Identity
 
-**Purpose**: Context-aware future interactions.
+Software engineer focused on distributed systems.
+Works with Go, Rust, and TypeScript.
+```
 
----
+### Preference
 
-## Learn More
+How you work:
 
-- [Why Local-First?](/concepts/why-local-first) — Benefits of local storage
-- [Agent Memory Guide](/guide/memory) — How to use memory tools
-- [Storage Design](/concepts/storage) — Technical architecture
+```markdown
+# Code Style
 
----
+- Prefers functional over imperative
+- Always uses error wrapping in Go
+- Wants tests before implementation
+```
 
-## References
+### Knowledge
 
-- [C-Sharp Corner: AI Agent Memory](https://www.c-sharpcorner.com/article/ai-agent-memory-how-to-keep-useful-context-across-sessionsforms)
-- [Mem0: Agent Memory Management](https://mem0.ai/library/agent-memory/ai-memory-management-for-llms-and-agents)
-- [Sanity.io: Agent Memory Glossary](https://www.sanity.io/glossary/agent-memory)
-- [Vectorize: Do Agents Learn Between Sessions?](https://vectorize.io/articles/do-ai-agents-learn-between-sessions)
+Facts learned:
+
+```markdown
+# Project Architecture
+
+memvault uses SQLite FTS5 for full-text search.
+Index built from message.content and message.meta.
+```
+
+### Summary
+
+Session recap:
+
+```markdown
+# Session Summary
+
+**Goal**: Implement folder picker UI  
+**Completed**: Added native dialog fallback  
+**Next**: Test on Windows  
+```
+
+## Managing Both Layers
+
+### View Archives
+
+```bash
+# List sessions
+memvault sessions list
+
+# Read session
+memvault sessions read <id>
+
+# Search across all
+memvault search "query"
+```
+
+### View Memories
+
+```bash
+# List memories
+memvault memories list
+
+# Read memory
+memvault memories read <id>
+
+# Search memories
+memvault memories search "query"
+```
+
+### Export for Sync
+
+```bash
+# Export both
+memvault export --to /path/to/sync
+
+# Import on another machine
+memvault import --from /path/to/sync
+```
+
+## Best Practices
+
+### For Archives
+
+- ✅ Never manually edit
+- ✅ Use search for retrieval
+- ✅ Export regularly for backup
+- ✅ Let hooks capture automatically
+
+### For Memories
+
+- ✅ Let agents maintain them
+- ✅ Review for accuracy
+- ✅ Edit Markdown directly when needed
+- ✅ Keep evidence links intact
+
+## Next Steps
+
+- [Why Local-First?](/concepts/why-local-first)
+- [Storage Design](/concepts/storage)
+- [Agent Memory Guide](/guide/memory)

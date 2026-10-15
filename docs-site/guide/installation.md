@@ -1,192 +1,222 @@
 # Installation
 
-Memvault is distributed as a single binary for macOS and Linux. Windows support is coming soon.
-
 ## System Requirements
 
-- macOS 11+ or Linux
-- 2GB free disk space
-- One of: Codex, Claude Code, or OpenCode
+- **Operating System**: macOS, Linux, or Windows
+- **Go Version**: 1.23 or later
+- **Disk Space**: ~100MB for binary, plus storage for archives
+- **Supported Agents**:
+  - Claude Code (terminal and desktop)
+  - Codex by Anthropic
+  - OpenCode (coming soon)
 
-## macOS
+## Installation Methods
 
-### Homebrew (Recommended)
+### 1. From Source (Recommended)
 
-```sh
-brew tap memvault-org/tap
-brew install memvault
-```
+Clone and build:
 
-Verify installation:
-
-```sh
-memvault version
-# memvault 0.1.0
-```
-
-### Manual Install
-
-1. Download the latest release:
-
-```sh
-curl -LO https://github.com/memvault-org/memvault/releases/latest/download/memvault_0.1.0_darwin_arm64.tar.gz
-```
-
-2. Extract and install:
-
-```sh
-tar xzf memvault_0.1.0_darwin_arm64.tar.gz
-sudo mv memvault /usr/local/bin/
-```
-
-3. Grant permissions:
-
-System Preferences → Security & Privacy → Allow `memvault` to run
-
----
-
-## Linux
-
-### Arch Linux (AUR)
-
-```sh
-yay -S memvault-bin
-```
-
-### Debian/Ubuntu
-
-```sh
-# Download .deb package
-curl -LO https://github.com/memvault-org/memvault/releases/latest/download/memvault_0.1.0_amd64.deb
-
-# Install
-sudo dpkg -i memvault_0.1.0_amd64.deb
-```
-
-### Fedora/RHEL
-
-```sh
-# Download .rpm package
-curl -LO https://github.com/memvault-org/memvault/releases/latest/download/memvault_0.1.0_amd64.rpm
-
-# Install
-sudo rpm -i memvault_0.1.0_amd64.rpm
-```
-
-### Generic Binary
-
-```sh
-# Download
-curl -LO https://github.com/memvault-org/memvault/releases/latest/download/memvault_0.1.0_linux_amd64.tar.gz
-
-# Extract
-tar xzf memvault_0.1.0_linux_amd64.tar.gz
-
-# Install
-sudo mv memvault /usr/local/bin/
-```
-
----
-
-## Build from Source
-
-Requires Go 1.23+:
-
-```sh
-git clone https://github.com/memvault-org/memvault.git
+```bash
+git clone https://github.com/liyown/memvault.git
 cd memvault
-make build
-
-# Binary at ./bin/memvault
-sudo mv bin/memvault /usr/local/bin/
+go build -o bin/memvault ./cmd/memvault
 ```
 
----
+Install to system:
 
-## Post-Install Setup
+```bash
+# macOS/Linux
+sudo cp bin/memvault /usr/local/bin/
 
-Run the setup wizard:
-
-```sh
-memvault setup
+# Or add to PATH in your shell rc file
+echo 'export PATH="$PATH:'$(pwd)'/bin"' >> ~/.zshrc
+source ~/.zshrc
 ```
 
-This will:
+```powershell
+# Windows (PowerShell as Administrator)
+Copy-Item bin\memvault.exe C:\Windows\System32\
+```
 
-1. Create vault directory (default: `~/memvault`)
-2. Install hooks for Codex/Claude Code/OpenCode
-3. Initialize SQLite index
-4. Generate config file
+### 2. Go Install
 
----
+```bash
+go install github.com/liyown/memvault/cmd/memvault@latest
+```
+
+Ensure `$GOPATH/bin` is in your PATH:
+
+```bash
+# macOS/Linux
+export PATH="$PATH:$(go env GOPATH)/bin"
+
+# Add to ~/.zshrc or ~/.bashrc to persist
+```
+
+### 3. Pre-built Binaries
+
+Download from [GitHub Releases](https://github.com/liyown/memvault/releases):
+
+```bash
+# macOS (ARM)
+curl -L https://github.com/liyown/memvault/releases/latest/download/memvault-darwin-arm64.tar.gz | tar xz
+sudo mv memvault /usr/local/bin/
+
+# Linux (AMD64)
+curl -L https://github.com/liyown/memvault/releases/latest/download/memvault-linux-amd64.tar.gz | tar xz
+sudo mv memvault /usr/local/bin/
+```
 
 ## Verify Installation
 
-```sh
-# Check version
+```bash
 memvault version
-
-# Check sources
-memvault sources
-
-# Open web UI
-memvault open
+# Output: memvault version v0.1.0
 ```
 
-Expected output:
-
-```
-Source        Hook   CLI    Last Scan
-codex         ✅     ✅     2026-01-15 10:30
-claude        ✅     ✅     —
-opencode      ✅     ❌     —
+```bash
+memvault help
+# Shows available commands
 ```
 
----
+## Initial Configuration
 
-## Permissions (macOS)
+### 1. Initialize Vault
 
-Memvault requires:
+```bash
+memvault init
+```
 
-- **Accessibility**: To install hooks
-- **Full Disk Access**: To read agent directories
+This creates:
 
-Grant in: System Preferences → Security & Privacy → Privacy
+```
+~/memvault/               # Default vault directory
+├── sessions/             # Conversation archives
+├── memories/             # Agent memory files
+└── .memvault/
+    ├── db/               # Search indices
+    └── config.yaml       # Configuration
+```
 
----
+### 2. Custom Vault Location
+
+```bash
+export MEMVAULT_HOME=/path/to/vault
+memvault init
+```
+
+Or set in config:
+
+```yaml
+# ~/.memvault/config.yaml
+vault:
+  root: /path/to/vault
+```
+
+### 3. Agent Home (for hooks)
+
+For multi-user systems or agent-specific vaults:
+
+```bash
+export MEMVAULT_AGENT_HOME=/path/to/agent/vault
+```
+
+## Agent Integration
+
+### Claude Code
+
+Edit `~/.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "SessionStart": "memvault hook session-start",
+    "UserPromptSubmit": "memvault hook user-prompt-submit"
+  },
+  "mcp": {
+    "servers": {
+      "memvault": {
+        "command": "memvault",
+        "args": ["mcp"],
+        "env": {
+          "MEMVAULT_HOME": "/Users/you/memvault"
+        }
+      }
+    }
+  }
+}
+```
+
+### Codex
+
+Edit Codex hook configuration:
+
+```json
+{
+  "hooks": {
+    "onSessionStart": "memvault hook session-start --agent codex",
+    "onUserPrompt": "memvault hook user-prompt-submit --agent codex"
+  }
+}
+```
+
+### Restart Agents
+
+After adding hooks:
+1. **Claude Code**: Quit and reopen terminal/desktop app
+2. **Codex**: Restart Codex application
+
+## Start Server
+
+For web UI and MCP services:
+
+```bash
+# Foreground
+memvault serve
+
+# Background (macOS/Linux)
+nohup memvault serve > /tmp/memvault.log 2>&1 &
+
+# As system service (systemd)
+sudo systemctl start memvault
+```
+
+Default port: `27961`
+
+Web UI: `http://localhost:27961`
+
+## Verification
+
+### Check Archive
+
+Have a conversation, then:
+
+```bash
+memvault sessions list
+```
+
+### Check Search
+
+```bash
+memvault search "test"
+```
+
+### Check MCP
+
+In Claude Code, the agent should list `memvault_*` tools.
 
 ## Uninstall
 
-### macOS (Homebrew)
-
-```sh
-brew uninstall memvault
-brew untap memvault-org/tap
-
-# Remove vault (optional)
-rm -rf ~/memvault
-```
-
-### Linux
-
-```sh
-# Debian/Ubuntu
-sudo dpkg -r memvault
-
-# Fedora/RHEL
-sudo rpm -e memvault
-
-# Manual
+```bash
+# Remove binary
 sudo rm /usr/local/bin/memvault
 
-# Remove vault (optional)
-rm -rf ~/memvault
+# Remove data (optional)
+rm -rf ~/memvault ~/.memvault
 ```
-
----
 
 ## Next Steps
 
-- [Getting Started](/guide/getting-started) — First-time setup
-- [Configuration](/reference/configuration) — Config options
-- [Troubleshooting](/guide/troubleshooting) — Common issues
+- [Getting Started](/guide/getting-started) - First-time setup
+- [Configuration](/reference/configuration) - Advanced settings
+- [CLI Reference](/reference/cli) - Command documentation

@@ -1,230 +1,263 @@
 # Why Local-First?
 
-Local-first architecture means your data lives on infrastructure you control — not in a vendor's cloud. For AI agent memory, this choice has profound implications for privacy, cost, latency, and resilience.
+Memvault is built on **local-first principles**: your data lives on your machine, under your control.
 
-## The Local vs Cloud Tradeoff
+## The Philosophy
 
-```mermaid
-graph TB
-    subgraph Cloud["☁️ Cloud Memory"]
-        C1[Your Agent] -->|API Call| C2[Vendor Server]
-        C2 -->|Embedding| C3[Vector DB]
-        C2 -->|Store| C4[Vendor Storage]
-        C2 -->|$$$| C5[Per-Token Charges]
-    end
-    
-    subgraph Local["💾 Local Memory"]
-        L1[Your Agent] -->|Direct Access| L2[Local Vault]
-        L2 -->|FTS5| L3[SQLite Index]
-        L2 -->|Zero Cost| L4[Your Disk]
-    end
-    
-    style Cloud fill:#f8e5e3,stroke:#e74c3c
-    style Local fill:#d6f5e3,stroke:#27ae60
+### You Own Your Data
+
+AI conversations are intellectual assets:
+- Capture your reasoning process
+- Document decisions and context
+- Contain sensitive information
+- Represent hours of work
+
+**They should belong to you, not the platform.**
+
+## Problems with Cloud-First
+
+### 1. Vendor Lock-In
+
+- Data trapped in proprietary formats
+- Can't export full history
+- Platform changes affect access
+- Risk of service shutdown
+
+### 2. Privacy Concerns
+
+- Conversations analyzed for training
+- No guarantee of deletion
+- Third-party access possible
+- Data residency unclear
+
+### 3. Limited Control
+
+- Can't customize storage
+- Search depends on platform
+- No offline access
+- Rate limits and quotas
+
+### 4. Portability
+
+- Moving between agents is hard
+- Historical context doesn't transfer
+- Must rebuild context each time
+- Walled gardens
+
+## Local-First Benefits
+
+### 1. Complete Ownership
+
+```
+Your Machine
+├── All conversations
+├── Full search index
+├── Agent memories
+└── Export formats
 ```
 
----
+- No platform can delete your data
+- No rate limits
+- No usage analytics
+- No third-party access
 
-## 1. Privacy & Data Sovereignty
+### 2. Privacy by Default
 
-### The Problem with Cloud Memory
+- Data never leaves your machine
+- No cloud processing
+- No AI training on your conversations
+- You control who sees what
 
-When you use a cloud-based memory service:
+### 3. Offline-First
 
-- Every conversation is transmitted to a third party
-- Your data is processed on servers you don't control
-- Deletion requests may not truly delete (backup policies vary)
-- Compliance with GDPR, CCPA, or HIPAA becomes complex
+- Works without internet
+- Search is instant
+- No network latency
+- No cloud downtime
 
-**Real-world impact**: A Fortune 500 developer told us they couldn't use cloud memory services because their company policy prohibits sending internal discussions to external APIs.
+### 4. Flexible Sync
 
-### The Local-First Solution
+**You choose how to sync:**
 
-With Memvault:
+```bash
+# iCloud
+ln -s ~/Library/Mobile\ Documents/... ~/memvault
 
-- Conversations never leave your machine
-- No API keys, no external requests, no telemetry
-- GDPR/CCPA compliance is straightforward (you're the data controller)
-- Air-gapped deployment possible (no internet required)
+# Dropbox
+ln -s ~/Dropbox/memvault ~/memvault
 
-> "Data sovereignty is control over where agent context and memory physically reside, who can access it, and which jurisdiction's laws apply."  
-> — [Atlan: Data Sovereignty for AI Agents](https://atlan.com/know/ai-agent/data-sovereignty-for-ai-agents/)
+# Git
+cd ~/memvault && git init
 
----
+# Syncthing
+syncthing add ~/memvault
+```
 
-## 2. Cost Predictability
+Memvault never implements sync—you use the tool you already trust.
 
-### Cloud Pricing Models
+## Architecture Implications
 
-Most cloud memory services charge per:
+### No Cloud Dependency
 
-- API request
-- Tokens processed
-- Storage volume
-- Vector embedding calls
+```
+┌─────────────────────────────────────┐
+│         Your Computer               │
+│                                     │
+│  Agent ←→ Memvault ←→ SQLite       │
+│              ↓                      │
+│         Markdown Files              │
+└─────────────────────────────────────┘
+```
 
-**Example**: At $0.0001/token with 100k conversations averaging 500 tokens each, you'd pay **$5,000/year** just for storage and retrieval — before embeddings.
-
-### Local is Free
-
-Memvault has:
-
-- Zero runtime costs (runs on your hardware)
-- No usage limits
-- No surprise bills
-- One-time hardware cost amortized over years
-
-**Calculation**: A $500 SSD stores 10M conversations. That's **$0.00005 per conversation** — 2,000× cheaper than cloud.
-
----
-
-## 3. Latency & Performance
-
-### Round-Trip Delays
-
-Cloud memory requires:
-
-- Network request to vendor API (~50-200ms)
-- Database query on remote server (~20-100ms)
-- Response back over network (~50-200ms)
-
-**Total**: 120-500ms per memory retrieval.
-
-For agents that query memory multiple times per turn, this compounds to **seconds of delay**.
-
-### Local Speed
-
-Memvault retrieves from local SQLite:
-
-- No network round trip (0ms)
-- Database query on local SSD (~10-50ms)
-- Total: **<50ms per query**
-
-> "Local memory eliminates round-trip delays to remote servers, which matters for interactive workloads where every inference loop needs to be fast."  
-> — [Medium: Edge AI Practical Guide](https://medium.com/@Micheal-Lanham/run-a-capable-ai-agent-on-your-laptop-the-2026-edge-ai-practical-guide-1d723355dcbe)
-
-**Performance benchmark** (Memvault on M1 MacBook Pro):
-
-| Operation | Local (Memvault) | Typical Cloud |
-|-----------|------------------|---------------|
-| Memory context retrieval | <50ms | 120-500ms |
-| Full-text search (1M corpus) | <100ms | 200-800ms |
-| Memory update | <20ms | 150-400ms |
-
----
-
-## 4. Resilience & Availability
-
-### Cloud Dependency Risks
-
-- Service outages (vendor downtime = your agent stops working)
-- API rate limits (throttled during high usage)
-- Sunset risk (vendor shuts down, you lose access)
-- Network dependency (no offline operation)
-
-**Real incident**: In March 2024, a major vector database provider had a 6-hour outage. Agents relying on it were completely offline.
-
-### Local Resilience
-
-- No single point of failure (your disk is the only dependency)
-- Works offline (no internet required)
-- No rate limits (only bound by your hardware)
-- Data portability (export to ZIP, move to any machine)
-
----
-
-## 5. Vendor Lock-In
-
-### Proprietary Formats
-
-Cloud services often store data in proprietary schemas:
-
-- Custom vector encodings
-- Vendor-specific APIs
-- Opaque backup formats
-
-**Migration pain**: Moving 1M conversations from one vendor to another can take weeks and require custom ETL scripts.
+- Agent talks to local process
+- Data stored locally
+- Search index local
+- Sync optional
 
 ### Open Formats
 
-Memvault uses:
+**Archives**: JSON + Markdown
+- Human-readable
+- Version control friendly
+- Easy to export
+- Future-proof
 
-- **Markdown** for memories (editable in any text editor)
-- **JSONL** for events (parseable by any tool)
-- **SQLite** for index (open standard, rebuildable)
+**Memories**: Plain Markdown
+- Edit in any text editor
+- Version with git
+- Search with grep
+- Platform-agnostic
 
-**Export**: `memvault export --out archive.zip` gives you everything in portable formats.
+### Portable
 
----
+Move between:
+- Machines (sync files)
+- Agents (open formats)
+- Operating systems (cross-platform)
+- Tools (grep, jq, cat work)
 
-## When Cloud Makes Sense
+## Real-World Scenarios
 
-Local-first isn't always the answer. Cloud memory is better if:
+### Scenario 1: Company Policy
 
-| Scenario | Why Cloud Wins |
-|----------|----------------|
-| **Multi-user collaboration** | Shared memory across team requires central server |
-| **Prototyping/MVP** | Faster to start without self-hosting infrastructure |
-| **Zero-ops requirement** | You want vendor to handle backups, scaling, security |
-| **Global distribution** | Edge nodes closer to users reduce latency |
+> "We can't use cloud AI that processes our internal data."
 
-**Hybrid approach**: Some organizations use Memvault for sensitive data and cloud memory for public knowledge bases.
+✅ **Solution**: Local archive + company NAS sync  
+All processing local, sync via corporate infrastructure.
 
----
+### Scenario 2: Sensitive Work
 
-## Industry Shift Toward Local
+> "My conversations contain trade secrets and customer data."
 
-By 2026, local-first agents overtook cloud agents in enterprise adoption:
+✅ **Solution**: Never leaves your machine  
+No risk of data leakage, full audit trail.
 
-> "Local-first designs let agents work in air-gapped or low-connectivity environments... For enterprises running agents at scale, local deployment avoids per-token cloud API costs that multiply with usage."  
-> — [SparkCo: Why Local-First AI Agents Are Winning](https://sparkco.ai/blog/why-local-first-ai-agents-are-winning-over-cloud-agents-in-2026)
+### Scenario 3: Long-Term Value
 
-**Key drivers**:
+> "What if Claude Code shuts down in 5 years?"
 
-1. **Privacy regulations** (GDPR, CCPA enforcement)
-2. **Cost at scale** (cloud bills growing exponentially)
-3. **Edge AI improvements** (on-device models closing quality gap)
-4. **Compliance requirements** (healthcare, finance, defense)
+✅ **Solution**: Archives in open formats  
+Data remains accessible, searchable, portable.
 
----
+### Scenario 4: Research
 
-## Memvault's Local-First Architecture
+> "I want to analyze my AI interaction patterns."
 
-```mermaid
-graph TD
-    A[Agent Request] --> B{MCP Tools}
-    B --> C[SQLite Index]
-    B --> D[JSONL Journal]
-    B --> E[Markdown Memories]
-    
-    C --> F[Local Disk]
-    D --> F
-    E --> F
-    
-    F --> G[Your Machine]
-    G --> H[Optional: Sync to iCloud/Dropbox]
-    
-    style G fill:#3b6dff,stroke:#2952cc,color:#fff
-    style F fill:#6ee7b7,stroke:#4ade80
+✅ **Solution**: Direct file access  
+Use any tool: Python, SQL, jq, Unix utilities.
+
+## Sync Strategy
+
+### You Decide
+
+Memvault provides the **local store**. You choose sync:
+
+| Tool | Use Case | Setup |
+|------|----------|-------|
+| **iCloud** | macOS/iOS | Link to iCloud folder |
+| **Dropbox** | Cross-platform | Link to Dropbox folder |
+| **Git** | Version control | `git init` in vault |
+| **Syncthing** | P2P sync | Add vault to Syncthing |
+| **rsync** | Manual backup | Script to NAS |
+| **None** | Single machine | No setup |
+
+### Conflict Resolution
+
+Because sync is external, conflicts are handled by your sync tool:
+
+```markdown
+<!-- iCloud/Dropbox conflict markers -->
+<<<<<<< Local
+User prefers Go
+=======
+User prefers Rust
+>>>>>>> Remote
 ```
 
-**No network requests. No vendor APIs. Just you and your data.**
+Memvault detects conflicts and flags them for review.
 
----
+## Comparison
+
+### Cloud-First (ChatGPT, Claude.ai)
+
+❌ Data on vendor servers  
+❌ Proprietary export  
+❌ No offline search  
+❌ Platform lock-in  
+❌ Privacy policy changes  
+
+### Local-First (Memvault)
+
+✅ Data on your machine  
+✅ Open formats  
+✅ Offline-first  
+✅ Platform-agnostic  
+✅ You set the rules  
+
+## Trade-Offs
+
+### What You Give Up
+
+- No built-in sync service
+- Must manage backups yourself
+- Cross-device requires setup
+- More disk space used
+
+### What You Gain
+
+- Complete control
+- Total privacy
+- Unlimited storage
+- Custom workflows
+- Data portability
+
+## Philosophy in Practice
+
+### Design Decisions
+
+1. **SQLite** not cloud DB → offline, fast, portable
+2. **Markdown** not proprietary → human-readable, greppable
+3. **Files** not API → direct access, version control
+4. **Hooks** not webhooks → local process, no network
+5. **MCP** not cloud service → local socket, instant
+
+### Future-Proofing
+
+Memvault's formats will work decades from now:
+
+```bash
+# In 2046, these still work:
+cat memories/background/*.md
+jq '.role' sessions/*/messages/*.json
+grep -r "search term" sessions/
+```
 
 ## Getting Started
 
-Ready to own your agent memory?
+See [Installation](/guide/installation) to begin using Memvault locally.
 
-→ [Installation Guide](/guide/installation)  
-→ [Quick Start Tutorial](/guide/getting-started)
+## Next Steps
 
----
-
-## References
-
-- [Cognee: Local AI Memory](https://www.cognee.ai/local-ai-memory)
-- [Oracle: File Systems vs Databases for Agent Memory](https://blogs.oracle.com/developers/comparing-file-systems-and-databases-for-effective-ai-agent-memory-management)
-- [Fast.io: Local-First Storage for AI Agents](https://www.fast.io/resources/ai-agent-local-first-storage/)
-- [Dev.to: Cloud vs Local Memory Comparison](https://dev.to/vektor_memory_43f51a32376/cloud-embeddings-vs-local-sovereign-memory-ai-agent-memory-layer-compared-2026-21p6)
-- [Atlan: Data Sovereignty for AI Agents](https://atlan.com/know/ai-agent/data-sovereignty-for-ai-agents/)
+- [Data Sovereignty](/concepts/data-sovereignty)
+- [Storage Design](/concepts/storage)
+- [Multi-Device Sync](/guide/sync)
