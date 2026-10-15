@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b6dff"/>
+      <stop offset="100%" stop-color="#6ee7b7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Vault door/safe icon representing secure local storage -->
+  <circle cx="32" cy="32" r="30" fill="#0a1628" stroke="url(#logoGradient)" stroke-width="2"/>
+
+  <!-- Inner vault -->
+  <circle cx="32" cy="32" r="18" fill="none" stroke="#3b6dff" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- Lock mechanism -->
+  <g transform="translate(32, 32)">
+    <!-- Center dial -->
+    <circle r="8" fill="url(#logoGradient)"/>
+    <circle r="5" fill="#0a1628"/>
+
+    <!-- Dial indicators -->
+    <line x1="0" y1="-8" x2="0" y2="-12" stroke="#6ee7b7" stroke-width="1.5"/>
+    <line x1="8" y1="0" x2="12" y2="0" stroke="#6ee7b7" stroke-width="1.5"/>
+    <line x1="0" y1="8" x2="0" y2="12" stroke="#6ee7b7" stroke-width="1.5"/>
+    <line x1="-8" y1="0" x2="-12" y2="0" stroke="#6ee7b7" stroke-width="1.5"/>
+  </g>
+
+  <!-- Corner bolts -->
+  <circle cx="13" cy="13" r="2" fill="#3b6dff"/>
+  <circle cx="51" cy="13" r="2" fill="#3b6dff"/>
+  <circle cx="13" cy="51" r="2" fill="#3b6dff"/>
+  <circle cx="51" cy="51" r="2" fill="#3b6dff"/>
+</svg>

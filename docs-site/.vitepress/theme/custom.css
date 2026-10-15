@@ -1,0 +1,77 @@
+/* Custom theme overrides for Memvault docs */
+
+:root {
+  /* Brand colors */
+  --vp-c-brand: #3b6dff;
+  --vp-c-brand-light: #5a84ff;
+  --vp-c-brand-lighter: #7a9bff;
+  --vp-c-brand-dark: #1a4ad9;
+  --vp-c-brand-darker: #0a2a9a;
+
+  /* Accent */
+  --vp-c-accent: #6ee7b7;
+
+  /* Background */
+  --vp-c-bg: #ffffff;
+  --vp-c-bg-soft: #f9f9f9;
+  --vp-c-bg-mute: #f1f1f1;
+  --vp-c-bg-alt: #fafafa;
+}
+
+.dark {
+  --vp-c-bg: #0a1628;
+  --vp-c-bg-soft: #0f1729;
+  --vp-c-bg-mute: #161d2b;
+  --vp-c-bg-alt: #1e2636;
+}
+
+/* Hero customization */
+.VPHero .name {
+  background: linear-gradient(120deg, var(--vp-c-brand) 30%, var(--vp-c-accent) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Mermaid diagram dark theme support */
+.vp-doc .mermaid {
+  background: transparent;
+  text-align: center;
+}
+
+.dark .vp-doc .mermaid svg {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Table responsive */
+.vp-doc table {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+/* Code block enhancements */
+.vp-doc div[class*='language-'] {
+  border-radius: 8px;
+}
+
+/* Custom container for comparisons */
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.comparison-grid h3 {
+  margin-top: 0;
+}
+
+.comparison-grid ul {
+  list-style: none;
+  padding: 0;
+}
+
+.comparison-grid li {
+  padding: 0.5rem 0;
+}

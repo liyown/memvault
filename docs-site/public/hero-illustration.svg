@@ -1,0 +1,277 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="1200" height="600">
+  <!-- Definitions -->
+  <defs>
+    <!-- Background gradient -->
+    <radialGradient id="bgGradient" cx="50%" cy="50%" r="80%">
+      <stop offset="0%" stop-color="#0a1628"/>
+      <stop offset="100%" stop-color="#050a14"/>
+    </radialGradient>
+
+    <!-- Cube gradients -->
+    <linearGradient id="cubeBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b6dff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#1a4ad9" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <linearGradient id="cubeGreen" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6ee7b7" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#34d399" stop-opacity="0.9"/>
+    </linearGradient>
+
+    <linearGradient id="cubeDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e2a4a" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#0f1729" stop-opacity="0.8"/>
+    </linearGradient>
+
+    <!-- Glow filter -->
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Grid pattern -->
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1a2a4a" stroke-width="0.5" opacity="0.4"/>
+    </pattern>
+
+    <!-- Circuit pattern -->
+    <pattern id="circuit" width="120" height="120" patternUnits="userSpaceOnUse">
+      <path d="M 0 60 L 30 60 L 40 50 L 80 50 L 90 60 L 120 60"
+            fill="none" stroke="#3b6dff" stroke-width="0.5" opacity="0.3"/>
+      <path d="M 60 0 L 60 30 L 70 40 L 70 80 L 60 90 L 60 120"
+            fill="none" stroke="#6ee7b7" stroke-width="0.5" opacity="0.2"/>
+      <circle cx="40" cy="50" r="2" fill="#3b6dff" opacity="0.4"/>
+      <circle cx="80" cy="50" r="2" fill="#3b6dff" opacity="0.4"/>
+      <circle cx="70" cy="40" r="2" fill="#6ee7b7" opacity="0.4"/>
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="600" fill="url(#bgGradient)"/>
+  <rect width="1200" height="600" fill="url(#circuit)"/>
+  <rect width="1200" height="600" fill="url(#grid)"/>
+
+  <!-- Subtle ambient glows -->
+  <circle cx="300" cy="300" r="200" fill="#3b6dff" opacity="0.05" filter="url(#softGlow)"/>
+  <circle cx="900" cy="300" r="200" fill="#6ee7b7" opacity="0.04" filter="url(#softGlow)"/>
+
+  <!-- Central connection lines (data flow) -->
+  <g opacity="0.5" stroke-linecap="round" fill="none">
+    <!-- Horizontal flow lines -->
+    <path d="M 100 300 L 1100 300" stroke="#3b6dff" stroke-width="1" stroke-dasharray="2,8" opacity="0.4"/>
+    <path d="M 150 250 L 1050 350" stroke="#6ee7b7" stroke-width="1" stroke-dasharray="2,8" opacity="0.3"/>
+    <path d="M 150 350 L 1050 250" stroke="#3b6dff" stroke-width="1" stroke-dasharray="2,8" opacity="0.3"/>
+  </g>
+
+  <!-- Left cluster: Database/Storage representation -->
+  <g transform="translate(180, 300)">
+    <!-- Connection lines from central element -->
+    <g stroke="#3b6dff" stroke-width="1" fill="none" opacity="0.6" filter="url(#glow)">
+      <line x1="60" y1="0" x2="0" y2="-60"/>
+      <line x1="60" y1="0" x2="0" y2="60"/>
+      <line x1="60" y1="0" x2="120" y2="0"/>
+    </g>
+
+    <!-- Database stack (left) -->
+    <g transform="translate(-60, 0)">
+      <ellipse cx="0" cy="-50" rx="40" ry="12" fill="url(#cubeBlue)" opacity="0.9"/>
+      <path d="M -40 -50 L -40 -10 A 40 12 0 0 0 40 -10 L 40 -50" fill="url(#cubeBlue)" opacity="0.7"/>
+      <ellipse cx="0" cy="-10" rx="40" ry="12" fill="url(#cubeBlue)" opacity="0.5"/>
+      <ellipse cx="0" cy="-50" rx="40" ry="12" fill="none" stroke="#6ee7b7" stroke-width="1" opacity="0.6"/>
+      <ellipse cx="0" cy="-30" rx="40" ry="12" fill="none" stroke="#6ee7b7" stroke-width="0.5" opacity="0.4"/>
+    </g>
+
+    <!-- Folder (top) -->
+    <g transform="translate(0, -100)">
+      <path d="M -35 0 L -35 -25 L -15 -25 L -10 -30 L 35 -30 L 35 0 Z"
+            fill="url(#cubeDark)" stroke="#3b6dff" stroke-width="1.5" opacity="0.9"/>
+      <path d="M -35 0 L 35 0" stroke="#6ee7b7" stroke-width="1" opacity="0.6"/>
+    </g>
+
+    <!-- Folder (bottom) -->
+    <g transform="translate(0, 100)">
+      <path d="M -35 30 L -35 5 L -15 5 L -10 0 L 35 0 L 35 30 Z"
+            fill="url(#cubeDark)" stroke="#6ee7b7" stroke-width="1.5" opacity="0.9"/>
+      <path d="M -35 30 L 35 30" stroke="#3b6dff" stroke-width="1" opacity="0.6"/>
+    </g>
+
+    <!-- Central cube -->
+    <g transform="translate(60, 0)">
+      <!-- Top face -->
+      <path d="M 0 -25 L 25 -12 L 0 1 L -25 -12 Z" fill="url(#cubeGreen)" opacity="0.9"/>
+      <!-- Right face -->
+      <path d="M 25 -12 L 25 12 L 0 25 L 0 1 Z" fill="url(#cubeBlue)" opacity="0.85"/>
+      <!-- Left face -->
+      <path d="M -25 -12 L -25 12 L 0 25 L 0 1 Z" fill="url(#cubeDark)" opacity="0.9"/>
+      <!-- Edges -->
+      <path d="M 0 -25 L 25 -12 L 25 12 L 0 25 L -25 12 L -25 -12 Z"
+            fill="none" stroke="#6ee7b7" stroke-width="1" opacity="0.6"/>
+    </g>
+  </g>
+
+  <!-- Center: AI/Brain representation -->
+  <g transform="translate(600, 300)">
+    <!-- Outer ring -->
+    <circle cx="0" cy="0" r="120" fill="none" stroke="#3b6dff" stroke-width="1"
+            stroke-dasharray="4,4" opacity="0.4"/>
+
+    <!-- Middle ring -->
+    <circle cx="0" cy="0" r="85" fill="none" stroke="#6ee7b7" stroke-width="1"
+            stroke-dasharray="2,6" opacity="0.5"/>
+
+    <!-- Inner core (neural network) -->
+    <g filter="url(#glow)">
+      <circle cx="0" cy="0" r="50" fill="#0a1628" stroke="#3b6dff" stroke-width="1.5"/>
+
+      <!-- Neural nodes -->
+      <g>
+        <!-- Layer 1 -->
+        <circle cx="-30" cy="-20" r="4" fill="#6ee7b7"/>
+        <circle cx="-30" cy="0" r="4" fill="#3b6dff"/>
+        <circle cx="-30" cy="20" r="4" fill="#6ee7b7"/>
+
+        <!-- Layer 2 -->
+        <circle cx="0" cy="-25" r="4" fill="#3b6dff"/>
+        <circle cx="0" cy="0" r="5" fill="#6ee7b7" filter="url(#glow)"/>
+        <circle cx="0" cy="25" r="4" fill="#3b6dff"/>
+
+        <!-- Layer 3 -->
+        <circle cx="30" cy="-20" r="4" fill="#6ee7b7"/>
+        <circle cx="30" cy="0" r="4" fill="#3b6dff"/>
+        <circle cx="30" cy="20" r="4" fill="#6ee7b7"/>
+
+        <!-- Connections -->
+        <g stroke="#3b6dff" stroke-width="0.8" opacity="0.6">
+          <line x1="-30" y1="-20" x2="0" y2="-25"/>
+          <line x1="-30" y1="-20" x2="0" y2="0"/>
+          <line x1="-30" y1="0" x2="0" y2="-25"/>
+          <line x1="-30" y1="0" x2="0" y2="0"/>
+          <line x1="-30" y1="0" x2="0" y2="25"/>
+          <line x1="-30" y1="20" x2="0" y2="0"/>
+          <line x1="-30" y1="20" x2="0" y2="25"/>
+
+          <line x1="0" y1="-25" x2="30" y2="-20"/>
+          <line x1="0" y1="-25" x2="30" y2="0"/>
+          <line x1="0" y1="0" x2="30" y2="-20"/>
+          <line x1="0" y1="0" x2="30" y2="0"/>
+          <line x1="0" y1="0" x2="30" y2="20"/>
+          <line x1="0" y1="25" x2="30" y2="0"/>
+          <line x1="0" y1="25" x2="30" y2="20"/>
+        </g>
+      </g>
+    </g>
+
+    <!-- Orbiting data points -->
+    <g opacity="0.7">
+      <circle cx="0" cy="-120" r="3" fill="#6ee7b7" filter="url(#glow)"/>
+      <circle cx="85" cy="-85" r="3" fill="#3b6dff" filter="url(#glow)"/>
+      <circle cx="120" cy="0" r="3" fill="#6ee7b7" filter="url(#glow)"/>
+      <circle cx="85" cy="85" r="3" fill="#3b6dff" filter="url(#glow)"/>
+      <circle cx="0" cy="120" r="3" fill="#6ee7b7" filter="url(#glow)"/>
+      <circle cx="-85" cy="85" r="3" fill="#3b6dff" filter="url(#glow)"/>
+      <circle cx="-120" cy="0" r="3" fill="#6ee7b7" filter="url(#glow)"/>
+      <circle cx="-85" cy="-85" r="3" fill="#3b6dff" filter="url(#glow)"/>
+    </g>
+  </g>
+
+  <!-- Right cluster: Data connections/Local nodes -->
+  <g transform="translate(1020, 300)">
+    <!-- Connection lines to center -->
+    <g stroke="#6ee7b7" stroke-width="1" fill="none" opacity="0.5">
+      <line x1="-60" y1="0" x2="0" y2="-50"/>
+      <line x1="-60" y1="0" x2="0" y2="0"/>
+      <line x1="-60" y1="0" x2="0" y2="50"/>
+    </g>
+
+    <!-- Cube stack -->
+    <g transform="translate(0, -50)">
+      <!-- Top face -->
+      <path d="M 0 -20 L 20 -10 L 0 0 L -20 -10 Z" fill="url(#cubeGreen)" opacity="0.9"/>
+      <!-- Right face -->
+      <path d="M 20 -10 L 20 10 L 0 20 L 0 0 Z" fill="url(#cubeBlue)" opacity="0.85"/>
+      <!-- Left face -->
+      <path d="M -20 -10 L -20 10 L 0 20 L 0 0 Z" fill="url(#cubeDark)" opacity="0.9"/>
+    </g>
+
+    <g transform="translate(0, 0)">
+      <!-- Top face -->
+      <path d="M 0 -20 L 20 -10 L 0 0 L -20 -10 Z" fill="url(#cubeBlue)" opacity="0.9"/>
+      <!-- Right face -->
+      <path d="M 20 -10 L 20 10 L 0 20 L 0 0 Z" fill="url(#cubeGreen)" opacity="0.7"/>
+      <!-- Left face -->
+      <path d="M -20 -10 L -20 10 L 0 20 L 0 0 Z" fill="url(#cubeDark)" opacity="0.9"/>
+    </g>
+
+    <g transform="translate(0, 50)">
+      <!-- Top face -->
+      <path d="M 0 -20 L 20 -10 L 0 0 L -20 -10 Z" fill="url(#cubeGreen)" opacity="0.9"/>
+      <!-- Right face -->
+      <path d="M 20 -10 L 20 10 L 0 20 L 0 0 Z" fill="url(#cubeBlue)" opacity="0.85"/>
+      <!-- Left face -->
+      <path d="M -20 -10 L -20 10 L 0 20 L 0 0 Z" fill="url(#cubeDark)" opacity="0.9"/>
+    </g>
+
+    <!-- Local indicator (lightning/sync icon) -->
+    <g transform="translate(-60, 0)" filter="url(#glow)">
+      <circle r="8" fill="#6ee7b7" opacity="0.3"/>
+      <circle r="4" fill="#6ee7b7"/>
+    </g>
+  </g>
+
+  <!-- Top decorative elements -->
+  <g opacity="0.6">
+    <!-- Top left nodes -->
+    <circle cx="100" cy="80" r="2" fill="#3b6dff"/>
+    <circle cx="150" cy="100" r="2" fill="#6ee7b7"/>
+    <circle cx="200" cy="70" r="2" fill="#3b6dff"/>
+    <line x1="100" y1="80" x2="150" y2="100" stroke="#3b6dff" stroke-width="0.5" opacity="0.5"/>
+    <line x1="150" y1="100" x2="200" y2="70" stroke="#3b6dff" stroke-width="0.5" opacity="0.5"/>
+
+    <!-- Top right nodes -->
+    <circle cx="1000" cy="80" r="2" fill="#6ee7b7"/>
+    <circle cx="1050" cy="100" r="2" fill="#3b6dff"/>
+    <circle cx="1100" cy="70" r="2" fill="#6ee7b7"/>
+    <line x1="1000" y1="80" x2="1050" y2="100" stroke="#6ee7b7" stroke-width="0.5" opacity="0.5"/>
+    <line x1="1050" y1="100" x2="1100" y2="70" stroke="#6ee7b7" stroke-width="0.5" opacity="0.5"/>
+  </g>
+
+  <!-- Bottom decorative elements -->
+  <g opacity="0.6">
+    <!-- Bottom left nodes -->
+    <circle cx="100" cy="520" r="2" fill="#6ee7b7"/>
+    <circle cx="150" cy="500" r="2" fill="#3b6dff"/>
+    <circle cx="200" cy="530" r="2" fill="#6ee7b7"/>
+    <line x1="100" y1="520" x2="150" y2="500" stroke="#3b6dff" stroke-width="0.5" opacity="0.5"/>
+    <line x1="150" y1="500" x2="200" y2="530" stroke="#3b6dff" stroke-width="0.5" opacity="0.5"/>
+
+    <!-- Bottom right nodes -->
+    <circle cx="1000" cy="520" r="2" fill="#3b6dff"/>
+    <circle cx="1050" cy="500" r="2" fill="#6ee7b7"/>
+    <circle cx="1100" cy="530" r="2" fill="#3b6dff"/>
+    <line x1="1000" y1="520" x2="1050" y2="500" stroke="#6ee7b7" stroke-width="0.5" opacity="0.5"/>
+    <line x1="1050" y1="500" x2="1100" y2="530" stroke="#6ee7b7" stroke-width="0.5" opacity="0.5"/>
+  </g>
+
+  <!-- Floating data particles -->
+  <g opacity="0.7">
+    <circle cx="400" cy="150" r="1.5" fill="#3b6dff" filter="url(#glow)"/>
+    <circle cx="450" cy="180" r="1" fill="#6ee7b7" filter="url(#glow)"/>
+    <circle cx="350" cy="450" r="1.5" fill="#6ee7b7" filter="url(#glow)"/>
+    <circle cx="800" cy="160" r="1" fill="#3b6dff" filter="url(#glow)"/>
+    <circle cx="750" cy="450" r="1.5" fill="#3b6dff" filter="url(#glow)"/>
+    <circle cx="850" cy="430" r="1" fill="#6ee7b7" filter="url(#glow)"/>
+    <circle cx="500" cy="100" r="1" fill="#6ee7b7" filter="url(#glow)"/>
+    <circle cx="700" cy="500" r="1.5" fill="#6ee7b7" filter="url(#glow)"/>
+  </g>
+</svg>

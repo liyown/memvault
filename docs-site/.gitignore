@@ -1,0 +1,11 @@
+# VitePress
+.vitepress/cache/
+.vitepress/dist/
+node_modules/
+
+# Logs
+*.log
+pnpm-debug.log*
+
+# System files
+.DS_Store
