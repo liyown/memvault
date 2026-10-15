@@ -1,0 +1,6 @@
+/bin/
+/dist/
+/web/node_modules/
+/.playwright-cli/
+/output/
+*.log

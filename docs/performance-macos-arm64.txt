@@ -1,0 +1,133 @@
+=== RUN   TestMillionMessageSearch
+    perf_test.go:56: indexed 10000 messages
+    perf_test.go:56: indexed 210000 messages
+    perf_test.go:56: indexed 410000 messages
+    perf_test.go:56: indexed 610000 messages
+    perf_test.go:56: indexed 810000 messages
+    perf_test.go:59: dataset: 10000 sessions, 1000000 messages, seed 25.474392s; darwin/arm64 CPUs=10
+    perf_test.go:71: search "记忆归档": 528.958µs
+    perf_test.go:71: search "portable": 180.916µs
+    perf_test.go:71: search "reference0042": 109.667µs
+    perf_test.go:71: search "软件开发 software": 556.542µs
+    perf_test.go:71: search "本地保存": 380.667µs
+    perf_test.go:71: search "design": 157µs
+    perf_test.go:71: search "记忆归档": 288.583µs
+    perf_test.go:71: search "portable": 133.083µs
+    perf_test.go:71: search "reference0042": 92.042µs
+    perf_test.go:71: search "软件开发 software": 462.958µs
+    perf_test.go:71: search "本地保存": 299.708µs
+    perf_test.go:71: search "design": 129.041µs
+    perf_test.go:71: search "记忆归档": 279.667µs
+    perf_test.go:71: search "portable": 130.417µs
+    perf_test.go:71: search "reference0042": 89.208µs
+    perf_test.go:71: search "软件开发 software": 457.167µs
+    perf_test.go:71: search "本地保存": 304.209µs
+    perf_test.go:71: search "design": 125.5µs
+    perf_test.go:71: search "记忆归档": 278µs
+    perf_test.go:71: search "portable": 129µs
+    perf_test.go:71: search "reference0042": 88.916µs
+    perf_test.go:71: search "软件开发 software": 456.917µs
+    perf_test.go:71: search "本地保存": 440.917µs
+    perf_test.go:71: search "design": 143.292µs
+    perf_test.go:71: search "记忆归档": 417.5µs
+    perf_test.go:71: search "portable": 177.792µs
+    perf_test.go:71: search "reference0042": 102µs
+    perf_test.go:71: search "软件开发 software": 484.375µs
+    perf_test.go:71: search "本地保存": 315.125µs
+    perf_test.go:71: search "design": 128.709µs
+    perf_test.go:71: search "记忆归档": 285.166µs
+    perf_test.go:71: search "portable": 130.333µs
+    perf_test.go:71: search "reference0042": 92.625µs
+    perf_test.go:71: search "软件开发 software": 458.042µs
+    perf_test.go:71: search "本地保存": 309.375µs
+    perf_test.go:71: search "design": 127.625µs
+    perf_test.go:71: search "记忆归档": 279.042µs
+    perf_test.go:71: search "portable": 128.667µs
+    perf_test.go:71: search "reference0042": 89.792µs
+    perf_test.go:71: search "软件开发 software": 454.917µs
+    perf_test.go:71: search "本地保存": 297.375µs
+    perf_test.go:71: search "design": 125.625µs
+    perf_test.go:71: search "记忆归档": 274.958µs
+    perf_test.go:71: search "portable": 128.917µs
+    perf_test.go:71: search "reference0042": 87.333µs
+    perf_test.go:71: search "软件开发 software": 456.375µs
+    perf_test.go:71: search "本地保存": 296.667µs
+    perf_test.go:71: search "design": 124.125µs
+    perf_test.go:71: search "记忆归档": 277.042µs
+    perf_test.go:71: search "portable": 131.542µs
+    perf_test.go:71: search "reference0042": 88.666µs
+    perf_test.go:71: search "软件开发 software": 457.167µs
+    perf_test.go:71: search "本地保存": 292.042µs
+    perf_test.go:71: search "design": 125.041µs
+    perf_test.go:71: search "记忆归档": 277.834µs
+    perf_test.go:71: search "portable": 128.208µs
+    perf_test.go:71: search "reference0042": 93.375µs
+    perf_test.go:71: search "软件开发 software": 452.334µs
+    perf_test.go:71: search "本地保存": 290.375µs
+    perf_test.go:71: search "design": 127.875µs
+    perf_test.go:71: search "记忆归档": 277.333µs
+    perf_test.go:71: search "portable": 132.083µs
+    perf_test.go:71: search "reference0042": 93.583µs
+    perf_test.go:71: search "软件开发 software": 457.917µs
+    perf_test.go:71: search "本地保存": 299.375µs
+    perf_test.go:71: search "design": 127.917µs
+    perf_test.go:71: search "记忆归档": 313.125µs
+    perf_test.go:71: search "portable": 158.791µs
+    perf_test.go:71: search "reference0042": 109.292µs
+    perf_test.go:71: search "软件开发 software": 472.708µs
+    perf_test.go:71: search "本地保存": 444.209µs
+    perf_test.go:71: search "design": 257.042µs
+    perf_test.go:71: search "记忆归档": 301.709µs
+    perf_test.go:71: search "portable": 166.375µs
+    perf_test.go:71: search "reference0042": 104.875µs
+    perf_test.go:71: search "软件开发 software": 480µs
+    perf_test.go:71: search "本地保存": 307.458µs
+    perf_test.go:71: search "design": 138.708µs
+    perf_test.go:71: search "记忆归档": 288.5µs
+    perf_test.go:71: search "portable": 140.459µs
+    perf_test.go:71: search "reference0042": 99.791µs
+    perf_test.go:71: search "软件开发 software": 459.958µs
+    perf_test.go:71: search "本地保存": 301.5µs
+    perf_test.go:71: search "design": 141.209µs
+    perf_test.go:71: search "记忆归档": 293.458µs
+    perf_test.go:71: search "portable": 155.416µs
+    perf_test.go:71: search "reference0042": 102.666µs
+    perf_test.go:71: search "软件开发 software": 474.125µs
+    perf_test.go:71: search "本地保存": 301.459µs
+    perf_test.go:71: search "design": 130.083µs
+    perf_test.go:71: search "记忆归档": 281.875µs
+    perf_test.go:71: search "portable": 140.333µs
+    perf_test.go:71: search "reference0042": 107.042µs
+    perf_test.go:71: search "软件开发 software": 497.667µs
+    perf_test.go:71: search "本地保存": 302.75µs
+    perf_test.go:71: search "design": 136.458µs
+    perf_test.go:71: search "记忆归档": 295.25µs
+    perf_test.go:71: search "portable": 132.916µs
+    perf_test.go:71: search "reference0042": 103.375µs
+    perf_test.go:71: search "软件开发 software": 465.25µs
+    perf_test.go:71: search "本地保存": 299.042µs
+    perf_test.go:71: search "design": 135.084µs
+    perf_test.go:71: search "记忆归档": 278.042µs
+    perf_test.go:71: search "portable": 138.5µs
+    perf_test.go:71: search "reference0042": 99.583µs
+    perf_test.go:71: search "软件开发 software": 465.708µs
+    perf_test.go:71: search "本地保存": 290.5µs
+    perf_test.go:71: search "design": 130.167µs
+    perf_test.go:71: search "记忆归档": 282.541µs
+    perf_test.go:71: search "portable": 139.083µs
+    perf_test.go:71: search "reference0042": 98.459µs
+    perf_test.go:71: search "软件开发 software": 468.666µs
+    perf_test.go:71: search "本地保存": 340.709µs
+    perf_test.go:71: search "design": 144.458µs
+    perf_test.go:71: search "记忆归档": 289.834µs
+    perf_test.go:71: search "portable": 139.417µs
+    perf_test.go:71: search "reference0042": 96.708µs
+    perf_test.go:71: search "软件开发 software": 593.75µs
+    perf_test.go:71: search "本地保存": 421.25µs
+    perf_test.go:71: search "design": 137.916µs
+    perf_test.go:84: hot search samples=120 P95=474.125µs; list + first 100 messages=4.134667ms
+    perf_test.go:108: search during 2000-message import P95=198.75µs
+    perf_test.go:129: million-message UI interactive: 130.0 ms
+--- PASS: TestMillionMessageSearch (29.06s)
+PASS
+ok  	memvault/internal/app	29.330s

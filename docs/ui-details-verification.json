@@ -1,0 +1,80 @@
+{
+  "date": "2026-10-15",
+  "environment": "macOS arm64 / Chromium / isolated local fixture",
+  "viewport_widths": [
+    1440,
+    960,
+    720,
+    390,
+    320
+  ],
+  "initial_checks": {
+    "form": {
+      "inputHeight": 40,
+      "buttonHeight": 40,
+      "bottomDelta": 0,
+      "labelGap": 8,
+      "overlap": false,
+      "labelBeforeInput": true
+    },
+    "pending": {
+      "disabled": true,
+      "widthBefore": 98,
+      "widthDuring": 98,
+      "spinnerAnimation": "spin",
+      "requests": 1
+    },
+    "unsavedPreserved": "/tmp/尚未保存的输入",
+    "sidebarMidWidth": 93.234375,
+    "sidebarCollapsedWidth": 72,
+    "select": {
+      "height": 40,
+      "appearance": "none",
+      "icon": true,
+      "focusWidth": "2px"
+    },
+    "menuFirstFocus": "用 Codex 继续",
+    "menuArrowFocus": "用 Claude Code 继续",
+    "menuEscapeFocus": "menu",
+    "tabletOverflow": false,
+    "mobileOverflow": false,
+    "drawer": {
+      "expanded": "true",
+      "workspaceInert": true,
+      "closedInert": true,
+      "restoredFocus": "icon-button sidebar-toggle"
+    },
+    "reducedMotion": "0s",
+    "errors": []
+  },
+  "confirmation": {
+    "focusRingFits": true,
+    "sourceDraft": "/tmp/尚未保存的来源",
+    "budgetDraft": "18000",
+    "copy": true,
+    "animation": {
+      "maxFrameMs": 9.400000000000091,
+      "frames": 67,
+      "width": 72
+    },
+    "searchLoading": {
+      "skeleton": true,
+      "emptyVisible": false
+    },
+    "nativeSelect": "codex",
+    "reflow720": true,
+    "reflow320": true,
+    "drawerLayers": {
+      "sidebar": 90,
+      "scrim": 89,
+      "toast": 80
+    },
+    "drawerTabInside": true,
+    "reducedMotion": "0s",
+    "settingsReadFailure": {
+      "sourceDisabled": true,
+      "budgetDisabled": true
+    }
+  },
+  "request_simulation": "Pending, search loading and settings read failure use delayed or failed fixture HTTP responses; user configuration was not modified."
+}
