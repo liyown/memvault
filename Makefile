@@ -1,4 +1,4 @@
-.PHONY: build test install clean
+.PHONY: build test install clean dist
 
 build:
 	cd web && npm ci --no-audit --no-fund && npm run build
@@ -18,3 +18,7 @@ install: build
 
 clean:
 	rm -rf bin
+
+dist:
+	./scripts/package.sh
+
